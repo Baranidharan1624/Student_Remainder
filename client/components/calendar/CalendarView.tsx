@@ -275,7 +275,7 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
                           </p>
                         </div>
                         <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-                          {formatTime(r.dueDate)}
+                          {formatTime(r.dueTime)}
                         </p>
                       </Link>
                     ))}
@@ -306,7 +306,7 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
             return (
               <div className="space-y-2">
                 {dayReminders
-                  .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+                  .sort((a, b) => new Date(a.reminderDateTime).getTime() - new Date(b.reminderDateTime).getTime())
                   .map((r) => (
                     <Link
                       key={r._id}
@@ -316,7 +316,7 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
                     >
                       <div className="text-center flex-shrink-0 w-16">
                         <p className="text-sm font-bold" style={{ color: "var(--color-primary)" }}>
-                          {formatTime(r.dueDate)}
+                          {formatTime(r.dueTime)}
                         </p>
                       </div>
                       <div className={cn("h-10 w-1 rounded-full", getCategoryDotColor(r.category))} />
@@ -364,7 +364,7 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
               {hoveredReminder.priority}
             </span>
             <span className="text-xs" style={{ color: "var(--text-tooltip-secondary)" }}>
-              {formatTime(hoveredReminder.dueDate)}
+              {formatTime(hoveredReminder.dueTime)}
             </span>
           </div>
         </div>

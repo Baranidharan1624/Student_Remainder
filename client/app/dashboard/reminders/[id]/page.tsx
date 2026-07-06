@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import { remindersAPI } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -25,8 +25,21 @@ const reminderSchema = z.object({
   category: z.string().min(1, "Category is required"),
   priority: z.string().optional(),
   dueDate: z.string().min(1, "Due date is required"),
+  dueTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Valid time is required"),
   completed: z.boolean().optional(),
-});
+})
+.refine(
+  (data) => {
+    // During edit, we might be editing an old reminder that is already in the past.
+    // It's often better not to strictly validate past dates on edit unless they change it, 
+    // but the simplest approach is to allow it or only warn. We will remove the past date validation on edit.
+    return true;
+  },
+  {
+    message: "Reminder cannot be set in the past",
+    path: ["dueTime"],
+  }
+);
 
 type ReminderFormData = z.infer<typeof reminderSchema>;
 
@@ -63,6 +76,7 @@ function EditReminderContent() {
               category: r.category,
               priority: r.priority,
               dueDate: new Date(r.dueDate).toISOString().split("T")[0],
+              dueTime: r.dueTime || "23:59", // fallback for older reminders
               completed: r.completed,
             });
           } else {
@@ -89,6 +103,7 @@ function EditReminderContent() {
         category: (data.category as Category) || undefined,
         priority: (data.priority as Priority) || undefined,
         dueDate: data.dueDate,
+        dueTime: data.dueTime,
         completed: data.completed,
       });
       toast.success("Reminder updated successfully!");
@@ -191,13 +206,22 @@ function EditReminderContent() {
                 />
               </div>
 
-              <Input
-                label="Due Date *"
-                type="date"
-                icon={<Calendar className="h-4 w-4" />}
-                error={errors.dueDate?.message}
-                {...register("dueDate")}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Due Date *"
+                  type="date"
+                  icon={<Calendar className="h-4 w-4" />}
+                  error={errors.dueDate?.message}
+                  {...register("dueDate")}
+                />
+                <Input
+                  label="Time *"
+                  type="time"
+                  icon={<Clock className="h-4 w-4" />}
+                  error={errors.dueTime?.message}
+                  {...register("dueTime")}
+                />
+              </div>
 
               <div className="flex items-center gap-3">
                 <label className="relative inline-flex items-center cursor-pointer">

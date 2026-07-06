@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Reminder = require("../models/Reminder");
+const moment = require("moment-timezone");
 
 // Valid enum values from the Reminder model
 const VALID_CATEGORIES = ["Assignment", "Exam", "Class", "Personal", "Meeting", "Other"];
@@ -10,13 +11,13 @@ const VALID_PRIORITIES = ["Low", "Medium", "High"];
 // ==========================================
 exports.createReminder = async (req, res) => {
   try {
-    const { title, description, subject, category, priority, dueDate } = req.body;
+    const { title, description, subject, category, priority, dueDate, dueTime } = req.body;
 
     // Validate required fields
-    if (!title || !dueDate) {
+    if (!title || !dueDate || !dueTime) {
       return res.status(400).json({
         success: false,
-        message: "Title and Due Date are required",
+        message: "Title, Due Date, and Due Time are required",
       });
     }
 
@@ -45,6 +46,36 @@ exports.createReminder = async (req, res) => {
       });
     }
 
+    // Validate dueTime format (HH:mm)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(dueTime)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid time format. Please use HH:mm (24-hour)",
+      });
+    }
+
+    // Combine date and time in Asia/Kolkata
+    const dateStr = parsedDueDate.toISOString().split("T")[0];
+    const reminderDateTimeStr = `${dateStr}T${dueTime}:00`;
+    const reminderTimeKolkata = moment.tz(reminderDateTimeStr, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
+    
+    if (!reminderTimeKolkata.isValid()) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date or time combination",
+      });
+    }
+
+    // Check if it's in the past
+    const nowKolkata = moment().tz("Asia/Kolkata");
+    if (reminderTimeKolkata.isBefore(nowKolkata)) {
+      return res.status(400).json({
+        success: false,
+        message: "Reminder cannot be set in the past",
+      });
+    }
+
     const reminder = await Reminder.create({
       user: req.user._id,
       title,
@@ -53,6 +84,9 @@ exports.createReminder = async (req, res) => {
       category,
       priority,
       dueDate: parsedDueDate,
+      dueTime,
+      reminderDateTime: reminderTimeKolkata.toDate(),
+      timezone: "Asia/Kolkata",
     });
 
     res.status(201).json({
@@ -126,10 +160,10 @@ exports.getReminders = async (req, res) => {
     }
 
     // TASK 6: Sort support
-    let sortOption = { dueDate: 1 }; // default sort
+    let sortOption = { reminderDateTime: 1 }; // default sort (nearest first)
 
     if (sort) {
-      const validSortFields = ["dueDate", "priority", "createdAt"];
+      const validSortFields = ["dueDate", "reminderDateTime", "priority", "createdAt"];
       const isDescending = sort.startsWith("-");
       const sortField = isDescending ? sort.substring(1) : sort;
 
@@ -256,7 +290,7 @@ exports.updateReminder = async (req, res) => {
       });
     }
 
-    const { title, description, subject, category, priority, dueDate, completed } = req.body;
+    const { title, description, subject, category, priority, dueDate, dueTime, completed } = req.body;
 
     // Validate category if provided
     if (category && !VALID_CATEGORIES.includes(category)) {
@@ -274,6 +308,18 @@ exports.updateReminder = async (req, res) => {
       });
     }
 
+    // Validate dueTime format (HH:mm) if provided
+    if (dueTime) {
+      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+      if (!timeRegex.test(dueTime)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid time format. Please use HH:mm (24-hour)",
+        });
+      }
+      reminder.dueTime = dueTime;
+    }
+
     // Validate dueDate if provided
     if (dueDate) {
       const parsedDueDate = new Date(dueDate);
@@ -284,6 +330,23 @@ exports.updateReminder = async (req, res) => {
         });
       }
       reminder.dueDate = parsedDueDate;
+    }
+
+    // If either dueDate or dueTime is updated, recalculate reminderDateTime
+    if (dueDate || dueTime) {
+      const currentDueDateStr = reminder.dueDate ? reminder.dueDate.toISOString().split("T")[0] : moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
+      const currentDueTime = reminder.dueTime || "23:59";
+      
+      const combinedDateTimeStr = `${currentDueDateStr}T${currentDueTime}:00`;
+      const updatedTimeKolkata = moment.tz(combinedDateTimeStr, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
+      
+      // Optionally validate if it's not in the past here if needed
+      // but if the user just wants to update title, we shouldn't block if the reminder is already in the past.
+      // So we just update the reminderDateTime.
+      
+      if (updatedTimeKolkata.isValid()) {
+        reminder.reminderDateTime = updatedTimeKolkata.toDate();
+      }
     }
 
     // Validate completed if provided
@@ -399,9 +462,11 @@ exports.getDashboard = async (req, res) => {
             {
               $match: {
                 completed: false,
-                dueDate: {
-                  $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                  $lte: new Date(new Date().setHours(23, 59, 59, 999)),
+                reminderDateTime: {
+                  // We need to match today's date in Kolkata timezone
+                  // Since aggregate happens on UTC dates in DB, it's safer to build start/end of day in Kolkata, then convert to UTC Date objects
+                  $gte: moment().tz("Asia/Kolkata").startOf('day').toDate(),
+                  $lte: moment().tz("Asia/Kolkata").endOf('day').toDate(),
                 },
               },
             },
@@ -411,7 +476,7 @@ exports.getDashboard = async (req, res) => {
             {
               $match: {
                 completed: false,
-                dueDate: { $lt: new Date() },
+                reminderDateTime: { $lt: moment().tz("Asia/Kolkata").toDate() },
               },
             },
             { $count: "count" },

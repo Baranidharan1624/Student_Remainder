@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import { remindersAPI } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -24,17 +24,18 @@ const reminderSchema = z
     category: z.string().min(1, "Category is required"),
     priority: z.string().optional(),
     dueDate: z.string().min(1, "Due date is required"),
+    dueTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Valid time is required"),
   })
   .refine(
     (data) => {
-      if (!data.dueDate) return true;
+      if (!data.dueDate || !data.dueTime) return true;
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return new Date(data.dueDate) >= today;
+      const selectedDate = new Date(`${data.dueDate}T${data.dueTime}:00`);
+      return selectedDate >= today;
     },
     {
-      message: "Due date cannot be in the past",
-      path: ["dueDate"],
+      message: "Reminder cannot be set in the past",
+      path: ["dueTime"],
     }
   );
 
@@ -66,8 +67,20 @@ function CreateReminderContent() {
         category: (data.category as Category) || "Other",
         priority: (data.priority as Priority) || "Medium",
         dueDate: data.dueDate,
+        dueTime: data.dueTime,
       });
-      toast.success("Reminder created successfully!");
+      toast.success(
+        <div>
+          Reminder created successfully.<br />
+          Email notifications scheduled:<br />
+          <ul className="list-disc ml-4 mt-1">
+            <li>24 Hours Before</li>
+            <li>5 Hours Before</li>
+            <li>10 Minutes Before</li>
+          </ul>
+        </div>,
+        { duration: 5000 }
+      );
       router.push("/dashboard/reminders");
     } catch (error: unknown) {
       const message =
@@ -153,13 +166,22 @@ function CreateReminderContent() {
               />
             </div>
 
-            <Input
-              label="Due Date *"
-              type="date"
-              icon={<Calendar className="h-4 w-4" />}
-              error={errors.dueDate?.message}
-              {...register("dueDate")}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Due Date *"
+                type="date"
+                icon={<Calendar className="h-4 w-4" />}
+                error={errors.dueDate?.message}
+                {...register("dueDate")}
+              />
+              <Input
+                label="Time *"
+                type="time"
+                icon={<Clock className="h-4 w-4" />}
+                error={errors.dueTime?.message}
+                {...register("dueTime")}
+              />
+            </div>
 
             <div className="flex items-center gap-3 pt-4">
               <Button type="submit" loading={loading}>

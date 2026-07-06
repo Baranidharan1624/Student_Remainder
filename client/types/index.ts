@@ -50,6 +50,12 @@ export interface Reminder {
   category: Category;
   priority: Priority;
   dueDate: string;
+  dueTime: string;
+  reminderDateTime: string;
+  remainingDays: number;
+  remainingHours: number;
+  remainingMinutes: number;
+  status: "Upcoming" | "Due Today" | "Completed" | "Overdue";
   completed: boolean;
   createdAt: string;
   updatedAt: string;
@@ -62,6 +68,7 @@ export interface CreateReminderPayload {
   category?: Category;
   priority?: Priority;
   dueDate: string;
+  dueTime: string;
 }
 
 export type UpdateReminderPayload = Partial<CreateReminderPayload> & {

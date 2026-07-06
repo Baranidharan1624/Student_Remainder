@@ -7,8 +7,11 @@ import {
   Clock,
   Pencil,
   Trash2,
+  Hourglass,
 } from "lucide-react";
 import type { Reminder } from "@/types";
+import { useCountdown } from "@/hooks/useCountdown";
+import { formatTime, getCountdownText } from "@/lib/utils";
 
 interface ReminderCardProps {
   reminder: Reminder;
@@ -52,28 +55,15 @@ function formatCreatedDate(dateStr: string) {
   });
 }
 
-function isOverdue(dateStr: string, completed: boolean) {
-  if (completed) return false;
-  return new Date(dateStr) < new Date();
-}
-
-function isDueToday(dateStr: string) {
-  const today = new Date();
-  const due = new Date(dateStr);
-  return (
-    due.getFullYear() === today.getFullYear() &&
-    due.getMonth() === today.getMonth() &&
-    due.getDate() === today.getDate()
-  );
-}
-
 export default function ReminderCard({
   reminder,
   onDelete,
   viewMode = "grid",
 }: ReminderCardProps) {
-  const overdue = isOverdue(reminder.dueDate, reminder.completed);
-  const dueToday = isDueToday(reminder.dueDate);
+  useCountdown(); // Trigger re-render every minute
+
+  const countdownText = getCountdownText(reminder.reminderDateTime, reminder.completed);
+  const isOverdue = countdownText === "Overdue";
 
   if (viewMode === "list") {
     return (
@@ -91,7 +81,7 @@ export default function ReminderCard({
           ) : (
             <Clock
               className="h-6 w-6"
-              style={{ color: overdue ? "var(--color-danger)" : "var(--color-warning)" }}
+              style={{ color: isOverdue ? "var(--color-danger)" : "var(--color-warning)" }}
             />
           )}
         </div>
@@ -126,9 +116,19 @@ export default function ReminderCard({
               <Calendar className="h-3 w-3" />
               {formatDate(reminder.dueDate)}
             </span>
+            {reminder.dueTime && (
+              <>
+                <span className="text-gray-300">|</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatTime(reminder.dueTime)}
+                </span>
+              </>
+            )}
             <span className="text-gray-300">|</span>
-            <span className="flex items-center gap-1">
-              {reminder.completed ? "Completed" : "Pending"}
+            <span className="flex items-center gap-1 font-medium" style={{ color: isOverdue ? "var(--color-danger)" : "inherit" }}>
+              <Hourglass className="h-3 w-3" />
+              {countdownText}
             </span>
             <span className="text-gray-300">|</span>
             <span>Created {formatCreatedDate(reminder.createdAt)}</span>
@@ -173,7 +173,7 @@ export default function ReminderCard({
           ) : (
             <Clock
               className="h-5 w-5 flex-shrink-0"
-              style={{ color: overdue ? "var(--color-danger)" : "var(--color-warning)" }}
+              style={{ color: isOverdue ? "var(--color-danger)" : "var(--color-warning)" }}
             />
           )}
           <span
@@ -216,23 +216,30 @@ export default function ReminderCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t mt-auto" style={{ borderColor: "var(--border-light)" }}>
-        <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-tertiary)" }}>
+        <div className="flex items-center gap-2 text-xs flex-wrap" style={{ color: "var(--text-tertiary)" }}>
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            {formatDate(reminder.dueDate)}
+          </span>
+          {reminder.dueTime && (
+            <>
+              <span className="text-gray-300">|</span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {formatTime(reminder.dueTime)}
+              </span>
+            </>
+          )}
+          <span className="text-gray-300">|</span>
           <span
-            className="font-medium"
+            className="font-medium flex items-center gap-1"
             style={{
-              color: overdue ? "var(--color-danger)" : dueToday ? "var(--color-primary)" : "var(--text-tertiary)",
+              color: isOverdue ? "var(--color-danger)" : reminder.completed ? "var(--color-success)" : "var(--text-tertiary)",
             }}
           >
-            {overdue
-              ? "Overdue"
-              : dueToday
-                ? "Due Today"
-                : formatDate(reminder.dueDate)}
+            <Hourglass className="h-3 w-3" />
+            {countdownText}
           </span>
-          <span className="text-gray-300">|</span>
-          <span>{reminder.completed ? "Completed" : "Pending"}</span>
-          <span className="text-gray-300">|</span>
-          <span>Created {formatCreatedDate(reminder.createdAt)}</span>
         </div>
         <div className="flex items-center gap-1">
           <Link

@@ -9,12 +9,34 @@ export function formatDate(dateStr: string | Date): string {
   });
 }
 
-export function formatTime(dateStr: string | Date): string {
-  const d = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
-  return d.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+export function formatTime(timeStr?: string): string {
+  if (!timeStr) return "";
+  const [h, m] = timeStr.split(":");
+  if (!h || !m) return "";
+  let hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour}:${m} ${ampm}`;
+}
+
+export function getCountdownText(reminderDateTime: string, completed: boolean): string {
+  if (completed) return "Completed";
+  if (!reminderDateTime) return "Upcoming"; // fallback
+
+  const now = new Date();
+  const target = new Date(reminderDateTime);
+  const diffMs = target.getTime() - now.getTime();
+
+  if (diffMs < 0) return "Overdue";
+
+  const diffMins = Math.floor(diffMs / 60000);
+  const days = Math.floor(diffMins / (24 * 60));
+  const hours = Math.floor((diffMins % (24 * 60)) / 60);
+  const mins = diffMins % 60;
+
+  if (days > 0) return `Due in ${days} Day${days > 1 ? "s" : ""}`;
+  if (hours > 0) return `Due in ${hours}h ${mins}m`;
+  return `Due in ${mins} Minute${mins !== 1 ? "s" : ""}`;
 }
 
 export function formatDateTime(dateStr: string | Date): string {

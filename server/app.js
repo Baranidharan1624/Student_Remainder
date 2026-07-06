@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
+const { startScheduler } = require("./services/reminderScheduler");
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
@@ -12,6 +13,9 @@ const app = express();
 
 // Connect Database
 connectDB();
+
+// Start Email Scheduler
+startScheduler();
 
 // Middleware
 app.use(cors());
