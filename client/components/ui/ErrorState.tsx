@@ -11,14 +11,19 @@ export default function ErrorState({
   onRetry,
 }: ErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="h-16 w-16 rounded-2xl bg-red-100 flex items-center justify-center mb-4">
-        <AlertCircle className="h-8 w-8 text-red-500" />
+    <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+      <div
+        className="h-16 w-16 rounded-2xl flex items-center justify-center mb-4"
+        style={{ background: "var(--color-danger-light)" }}
+      >
+        <AlertCircle className="h-8 w-8" style={{ color: "var(--color-danger)" }} />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+      <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
         Oops!
       </h3>
-      <p className="text-sm text-gray-500 max-w-sm mb-4">{message}</p>
+      <p className="text-sm max-w-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+        {message}
+      </p>
       {onRetry && (
         <Button variant="secondary" onClick={onRetry}>
           <RefreshCw className="h-4 w-4 mr-2" />

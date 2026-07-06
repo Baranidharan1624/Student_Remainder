@@ -16,10 +16,10 @@ export default function UpcomingSection({ reminders, loading }: UpcomingSectionP
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+            <div className="h-3 w-24 rounded mb-2 skeleton" />
             <div className="space-y-2">
-              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+              <div className="h-10 rounded-lg skeleton" />
+              <div className="h-10 rounded-lg skeleton" />
             </div>
           </div>
         ))}
@@ -30,7 +30,7 @@ export default function UpcomingSection({ reminders, loading }: UpcomingSectionP
   if (reminders.length === 0) {
     return (
       <div className="text-center py-6">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           No upcoming reminders
         </p>
       </div>
@@ -52,7 +52,7 @@ export default function UpcomingSection({ reminders, loading }: UpcomingSectionP
     <div className="space-y-4">
       {Array.from(grouped.entries()).map(([date, items]) => (
         <div key={date}>
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
             {getRelativeDate(date)}
           </p>
           <div className="space-y-1.5">
@@ -60,18 +60,18 @@ export default function UpcomingSection({ reminders, loading }: UpcomingSectionP
               <Link
                 key={r._id}
                 href={`/dashboard/reminders/${r._id}`}
-                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors group"
+                className="flex items-center gap-3 p-2.5 rounded-xl transition-colors group hover:bg-[var(--surface-hover)]"
               >
                 <div className={`h-2 w-2 rounded-full flex-shrink-0 ${getCategoryDotColor(r.category)}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
                     {r.title}
                   </p>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPriorityBg(r.priority)}`}>
                   {r.priority}
                 </span>
-                <ArrowRight className="h-3.5 w-3.5 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--text-tertiary)" }} />
               </Link>
             ))}
           </div>

@@ -6,11 +6,11 @@ import { Bell, Check, Trash2 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { formatDateTime, cn } from "@/lib/utils";
 
-const typeColors = {
-  due_today: "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
-  due_tomorrow: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-  overdue: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
-  due_soon: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
+const typeColors: Record<string, string> = {
+  due_today: "bg-amber-100 text-amber-600",
+  due_tomorrow: "bg-blue-100 text-blue-600",
+  overdue: "bg-red-100 text-red-600",
+  due_soon: "bg-indigo-100 text-indigo-600",
 };
 
 export default function NotificationBell() {
@@ -33,23 +33,31 @@ export default function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        className="relative p-2.5 rounded-xl transition-colors hover:bg-[var(--surface-hover)]"
+        style={{ color: "var(--text-secondary)" }}
+        aria-label="Notifications"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[18px] h-[18px]">
+          <span className="absolute -top-0.5 -right-0.5 bg-[var(--color-danger)] text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[18px] h-[18px] px-1">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 max-h-[70vh] flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <div
+          className="absolute right-0 mt-2 w-80 rounded-2xl shadow-xl border z-50 max-h-[70vh] flex flex-col animate-scale-in"
+          style={{
+            background: "var(--bg-card)",
+            borderColor: "var(--border-default)",
+          }}
+        >
+          <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "var(--border-light)" }}>
+            <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
               Notifications
               {unreadCount > 0 && (
-                <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                <span className="ml-2 text-xs" style={{ color: "var(--color-primary)" }}>
                   ({unreadCount} unread)
                 </span>
               )}
@@ -58,7 +66,8 @@ export default function NotificationBell() {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  className="p-1.5 rounded-lg transition-colors hover:bg-[var(--surface-hover)]"
+                  style={{ color: "var(--text-tertiary)" }}
                   title="Mark all as read"
                 >
                   <Check className="h-4 w-4" />
@@ -67,7 +76,8 @@ export default function NotificationBell() {
               {notifications.length > 0 && (
                 <button
                   onClick={clearNotifications}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="p-1.5 rounded-lg transition-colors hover:bg-[var(--color-danger-light)]"
+                  style={{ color: "var(--text-tertiary)" }}
                   title="Clear all"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -79,8 +89,8 @@ export default function NotificationBell() {
           <div className="overflow-y-auto flex-1">
             {notifications.length === 0 ? (
               <div className="text-center py-8">
-                <Bell className="h-8 w-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No notifications</p>
+                <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-tertiary)" }} />
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No notifications</p>
               </div>
             ) : (
               notifications.slice(0, 20).map((n) => (
@@ -92,21 +102,22 @@ export default function NotificationBell() {
                     setOpen(false);
                   }}
                   className={cn(
-                    "flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0",
-                    !n.read && "bg-blue-50/50 dark:bg-blue-900/10"
+                    "flex items-start gap-3 p-3 transition-colors border-b last:border-0 hover:bg-[var(--surface-hover)]",
+                    !n.read && "bg-[var(--color-primary-light)]"
                   )}
+                  style={{ borderColor: "var(--border-light)" }}
                 >
                   <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs", typeColors[n.type])}>
-                    {n.type === "overdue" ? "❌" : n.type === "due_today" ? "🔔" : "📅"}
+                    {n.type === "overdue" ? "!" : n.type === "due_today" ? "+" : "~"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={cn("text-sm", n.read ? "text-gray-600 dark:text-gray-400" : "font-medium text-gray-900 dark:text-gray-100")}>
+                    <p className={cn("text-sm", !n.read && "font-medium")} style={{ color: "var(--text-primary)" }}>
                       {n.title}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{n.message}</p>
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{formatDateTime(n.createdAt)}</p>
+                    <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>{n.message}</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>{formatDateTime(n.createdAt)}</p>
                   </div>
-                  {!n.read && <div className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 mt-2" />}
+                  {!n.read && <div className="h-2 w-2 rounded-full flex-shrink-0 mt-2" style={{ background: "var(--color-primary)" }} />}
                 </Link>
               ))
             )}

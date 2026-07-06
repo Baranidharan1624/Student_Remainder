@@ -3,8 +3,8 @@ import { Loader2 } from "lucide-react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "outline";
+  size?: "sm" | "md" | "lg" | "icon";
   loading?: boolean;
   fullWidth?: boolean;
 }
@@ -24,33 +24,44 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed btn-active";
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40",
+        "text-white shadow-lg hover:shadow-xl focus-visible:ring-[var(--color-primary)]",
       secondary:
-        "bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-400",
+        "border focus-visible:ring-gray-400",
       ghost:
-        "bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-400",
+        "hover:bg-[var(--surface-hover)] focus-visible:ring-gray-400",
       danger:
-        "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-red-500 shadow-lg shadow-red-500/25",
+        "text-white shadow-lg hover:shadow-xl focus-visible:ring-red-500",
+      outline:
+        "border bg-transparent hover:bg-[var(--surface-hover)] focus-visible:ring-[var(--color-primary)]",
     };
 
     const sizes = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-5 py-2.5 text-sm",
-      lg: "px-6 py-3 text-base",
+      sm: "px-3.5 py-1.5 text-sm gap-1.5",
+      md: "px-5 py-2.5 text-sm gap-2",
+      lg: "px-6 py-3 text-base gap-2",
+      icon: "p-2.5",
+    };
+
+    const variantStyles = {
+      primary: "bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white shadow-[var(--shadow-md)]",
+      secondary: "bg-[var(--bg-tertiary)] text-[var(--text-primary)] border-[var(--border-default)] hover:bg-[var(--surface-hover)]",
+      ghost: "text-[var(--text-secondary)]",
+      danger: "bg-[var(--color-danger)] hover:bg-red-600 text-white shadow-[var(--shadow-md)]",
+      outline: "border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
     };
 
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${fullWidth ? "w-full" : ""} ${className}`}
+        className={`${baseStyles} ${variants[variant]} ${variantStyles[variant]} ${sizes[size]} ${fullWidth ? "w-full" : ""} ${className}`}
         {...props}
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading && <Loader2 className="h-4 w-4 animate-spin" />}
         {children}
       </button>
     );

@@ -14,8 +14,8 @@ export default function ProgressRing({
   max = 100,
   size = 80,
   strokeWidth = 6,
-  color = "#3b82f6",
-  bgColor = "#e5e7eb",
+  color,
+  bgColor,
   label,
   showValue = true,
 }: ProgressRingProps) {
@@ -23,6 +23,9 @@ export default function ProgressRing({
   const circumference = 2 * Math.PI * radius;
   const percent = Math.min(value / max, 1);
   const offset = circumference - percent * circumference;
+
+  const resolvedColor = color || "var(--color-primary)";
+  const resolvedBg = bgColor || "var(--bg-tertiary)";
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -33,7 +36,7 @@ export default function ProgressRing({
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke={bgColor}
+            stroke={resolvedBg}
             strokeWidth={strokeWidth}
           />
           <circle
@@ -41,7 +44,7 @@ export default function ProgressRing({
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke={color}
+            stroke={resolvedColor}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={offset}
@@ -51,14 +54,14 @@ export default function ProgressRing({
         </svg>
         {showValue && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
+            <span className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
               {Math.round(percent * 100)}%
             </span>
           </div>
         )}
       </div>
       {label && (
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+        <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
           {label}
         </span>
       )}

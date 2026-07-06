@@ -14,12 +14,19 @@ export default function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="h-16 w-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-        {icon || <ClipboardList className="h-8 w-8 text-gray-400" />}
+    <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+      <div
+        className="h-16 w-16 rounded-2xl flex items-center justify-center mb-4"
+        style={{ background: "var(--bg-tertiary)" }}
+      >
+        {icon || <ClipboardList className="h-8 w-8" style={{ color: "var(--text-tertiary)" }} />}
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
-      <p className="text-sm text-gray-500 max-w-sm mb-4">{description}</p>
+      <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+        {title}
+      </h3>
+      <p className="text-sm max-w-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+        {description}
+      </p>
       {action}
     </div>
   );

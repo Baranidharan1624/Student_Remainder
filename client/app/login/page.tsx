@@ -54,19 +54,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 gradient-mesh" style={{ background: "var(--bg-secondary)" }}>
+      <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/25 mb-4">
+          <div
+            className="inline-flex items-center justify-center h-16 w-16 rounded-2xl shadow-lg mb-4"
+            style={{
+              background: "var(--color-primary)",
+              boxShadow: "0 8px 24px 0 rgba(37, 99, 235, 0.3)",
+            }}
+          >
             <Bell className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Student Reminder</h1>
-          <p className="text-gray-500 mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Student Reminder</h1>
+          <p className="mt-1" style={{ color: "var(--text-secondary)" }}>Sign in to your account</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8">
+        <div
+          className="rounded-2xl shadow-xl border p-8"
+          style={{
+            background: "var(--bg-card)",
+            borderColor: "var(--border-default)",
+          }}
+        >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Input
               label="Email"
@@ -89,13 +101,10 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-[38px] text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-[38px] transition-colors"
+                style={{ color: "var(--text-tertiary)" }}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
 
@@ -103,29 +112,26 @@ export default function LoginPage() {
               <button
                 type="button"
                 disabled
-                className="text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{ color: "var(--color-primary)" }}
               >
                 Forgot Password?
               </button>
             </div>
 
-            <Button
-              type="submit"
-              fullWidth
-              size="lg"
-              loading={isSubmitting}
-            >
+            <Button type="submit" fullWidth size="lg" loading={isSubmitting}>
               Sign In
             </Button>
           </form>
         </div>
 
         {/* Register Link */}
-        <p className="text-center mt-6 text-sm text-gray-500">
+        <p className="text-center mt-6 text-sm" style={{ color: "var(--text-secondary)" }}>
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            className="font-medium transition-colors hover:opacity-80"
+            style={{ color: "var(--color-primary)" }}
           >
             Create an account
           </Link>

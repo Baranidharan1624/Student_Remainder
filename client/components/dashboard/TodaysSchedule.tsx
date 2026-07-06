@@ -16,10 +16,10 @@ export default function TodaysSchedule({ reminders, loading }: TodaysSchedulePro
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 p-3 rounded-xl animate-pulse">
-            <div className="h-10 w-20 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+            <div className="h-10 w-20 rounded-lg skeleton" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
-              <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-4 w-48 rounded skeleton" />
+              <div className="h-3 w-32 rounded skeleton" />
             </div>
           </div>
         ))}
@@ -31,10 +31,10 @@ export default function TodaysSchedule({ reminders, loading }: TodaysSchedulePro
     return (
       <div className="text-center py-8">
         <div className="text-4xl mb-3">🎉</div>
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+        <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
           Nothing due today.
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
           Enjoy your day.
         </p>
       </div>
@@ -51,19 +51,22 @@ export default function TodaysSchedule({ reminders, loading }: TodaysSchedulePro
         <Link
           key={r._id}
           href={`/dashboard/reminders/${r._id}`}
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors group"
+          className="flex items-center gap-3 p-3 rounded-xl transition-colors group hover:bg-[var(--surface-hover)]"
         >
           <div className="flex-shrink-0 text-center">
-            <p className="text-xs font-bold text-blue-600 dark:text-blue-400">
+            <p className="text-xs font-bold" style={{ color: "var(--color-primary)" }}>
               {formatTime(r.dueDate)}
             </p>
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-medium truncate ${r.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-gray-100"}`}>
+            <p
+              className={`text-sm font-medium truncate ${r.completed ? "line-through" : ""}`}
+              style={{ color: r.completed ? "var(--text-tertiary)" : "var(--text-primary)" }}
+            >
               {r.title}
             </p>
             {r.subject && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
                 {r.subject}
               </p>
             )}
@@ -73,9 +76,9 @@ export default function TodaysSchedule({ reminders, loading }: TodaysSchedulePro
               {r.priority}
             </span>
             {r.completed ? (
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4" style={{ color: "var(--color-success)" }} />
             ) : (
-              <ArrowRight className="h-4 w-4 text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--text-tertiary)" }} />
             )}
           </div>
         </Link>

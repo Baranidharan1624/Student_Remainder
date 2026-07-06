@@ -32,7 +32,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
+      <body className="min-h-full flex flex-col" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
         <ThemeProvider>
           <AuthProvider>
             <NotificationProvider>
@@ -43,20 +43,22 @@ export default function RootLayout({
                   duration: 4000,
                   style: {
                     borderRadius: "12px",
-                    background: "#1f2937",
-                    color: "#f9fafb",
+                    background: "var(--bg-card)",
+                    color: "var(--text-primary)",
                     fontSize: "14px",
+                    border: "1px solid var(--border-default)",
+                    boxShadow: "var(--shadow-lg)",
                   },
                   success: {
                     iconTheme: {
-                      primary: "#22c55e",
-                      secondary: "#ffffff",
+                      primary: "#22C55E",
+                      secondary: "white",
                     },
                   },
                   error: {
                     iconTheme: {
-                      primary: "#ef4444",
-                      secondary: "#ffffff",
+                      primary: "#EF4444",
+                      secondary: "white",
                     },
                   },
                 }}

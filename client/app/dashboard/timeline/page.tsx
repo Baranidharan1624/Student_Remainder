@@ -35,19 +35,23 @@ function TimelineContent() {
   }, [refreshKey]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen" style={{ background: "var(--bg-secondary)" }}>
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 animate-fade-in">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Timeline</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Timeline</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               Your reminders organized by date
             </p>
           </div>
           <Link
             href="/dashboard/reminders/new"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/25 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all btn-active shadow-lg"
+            style={{
+              background: "var(--color-primary)",
+              boxShadow: "0 4px 14px 0 rgba(37, 99, 235, 0.39)",
+            }}
           >
             <Plus className="h-4 w-4" />
             New Reminder

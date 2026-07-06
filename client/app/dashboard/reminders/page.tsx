@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Plus, LayoutGrid, List } from "lucide-react";
+import { Plus, LayoutGrid, List, Search } from "lucide-react";
 import { remindersAPI } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Navbar from "@/components/layout/Navbar";
@@ -70,7 +70,6 @@ function RemindersContent() {
     return () => { cancelled = true; };
   }, [filters, page, limit, search, refreshKey]);
 
-  // Reset to page 1 when search, filters, or limit change
   const prevSearchRef = useRef(search);
   const prevFiltersRef = useRef(filters);
   const prevLimitRef = useRef(limit);
@@ -103,14 +102,14 @@ function RemindersContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: "var(--bg-secondary)" }}>
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 animate-fade-in">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Reminders</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Reminders</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
               {totalItems} reminder{totalItems !== 1 ? "s" : ""} total
             </p>
           </div>
@@ -119,7 +118,12 @@ function RemindersContent() {
             <select
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
+              className="px-3 py-2 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-[var(--color-primary)]"
+              style={{
+                borderColor: "var(--border-default)",
+                background: "var(--bg-tertiary)",
+                color: "var(--text-primary)",
+              }}
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <option key={size} value={size}>
@@ -128,31 +132,37 @@ function RemindersContent() {
               ))}
             </select>
             {/* View Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-xl p-1">
+            <div className="flex items-center rounded-xl p-1" style={{ background: "var(--bg-tertiary)" }}>
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === "grid"
-                    ? "bg-white shadow-sm text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className="p-2 rounded-lg transition-all"
+                style={{
+                  background: viewMode === "grid" ? "var(--bg-card)" : "transparent",
+                  color: viewMode === "grid" ? "var(--color-primary)" : "var(--text-tertiary)",
+                  boxShadow: viewMode === "grid" ? "var(--shadow-sm)" : "none",
+                }}
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-2 rounded-lg transition-colors ${
-                  viewMode === "list"
-                    ? "bg-white shadow-sm text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className="p-2 rounded-lg transition-all"
+                style={{
+                  background: viewMode === "list" ? "var(--bg-card)" : "transparent",
+                  color: viewMode === "list" ? "var(--color-primary)" : "var(--text-tertiary)",
+                  boxShadow: viewMode === "list" ? "var(--shadow-sm)" : "none",
+                }}
               >
                 <List className="h-4 w-4" />
               </button>
             </div>
             <Link
               href="/dashboard/reminders/new"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/25 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all btn-active shadow-lg"
+              style={{
+                background: "var(--color-primary)",
+                boxShadow: "0 4px 14px 0 rgba(37, 99, 235, 0.39)",
+              }}
             >
               <Plus className="h-4 w-4" />
               New Reminder
@@ -161,7 +171,7 @@ function RemindersContent() {
         </div>
 
         {/* Search & Filters */}
-        <div className="mb-6 space-y-4">
+        <div className="mb-6 space-y-4 animate-fade-in" style={{ animationDelay: "100ms" }}>
           <SearchBar
             value={search}
             onChange={setSearch}
@@ -200,7 +210,11 @@ function RemindersContent() {
               !search ? (
                 <Link
                   href="/dashboard/reminders/new"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:to-blue-800 transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium shadow-lg transition-all btn-active"
+                  style={{
+                    background: "var(--color-primary)",
+                    boxShadow: "0 4px 14px 0 rgba(37, 99, 235, 0.39)",
+                  }}
                 >
                   <Plus className="h-4 w-4" />
                   Create Reminder
@@ -217,17 +231,17 @@ function RemindersContent() {
                   : "space-y-3"
               }
             >
-              {reminders.map((reminder) => (
-                <ReminderCard
-                  key={reminder._id}
-                  reminder={reminder}
-                  onDelete={setDeleteId}
-                  viewMode={viewMode}
-                />
+              {reminders.map((reminder, idx) => (
+                <div key={reminder._id} className="animate-fade-in" style={{ animationDelay: `${idx * 30}ms` }}>
+                  <ReminderCard
+                    reminder={reminder}
+                    onDelete={setDeleteId}
+                    viewMode={viewMode}
+                  />
+                </div>
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-8">
                 <Pagination

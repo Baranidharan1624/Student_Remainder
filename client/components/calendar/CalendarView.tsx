@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
-  X,
 } from "lucide-react";
 import type { Reminder, Priority } from "@/types";
 import {
@@ -93,11 +92,17 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
   });
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+    <div
+      className="rounded-2xl border"
+      style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+      <div
+        className="flex items-center justify-between p-4 border-b"
+        style={{ borderColor: "var(--border-default)" }}
+      >
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
             {view === "daily"
               ? currentDate.toLocaleDateString("en-US", {
                   weekday: "long",
@@ -106,17 +111,23 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
                 })
               : monthLabel}
           </h2>
-          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+          <div
+            className="flex items-center rounded-lg p-0.5"
+            style={{ background: "var(--bg-tertiary)" }}
+          >
             {(["monthly", "weekly", "daily"] as ViewMode[]).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
                 className={cn(
                   "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                  view === v
-                    ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  view === v ? "shadow-sm" : ""
                 )}
+                style={
+                  view === v
+                    ? { background: "var(--bg-card)", color: "var(--text-primary)" }
+                    : { color: "var(--text-muted)" }
+                }
               >
                 {v.charAt(0).toUpperCase() + v.slice(1)}
               </button>
@@ -126,19 +137,22 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={goToday}
-            className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+            style={{ color: "var(--color-primary)" }}
           >
             Today
           </button>
           <button
             onClick={prev}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: "var(--text-muted)" }}
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={next}
-            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: "var(--text-muted)" }}
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -148,11 +162,15 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
       {/* Monthly View */}
       {view === "monthly" && (
         <div className="p-4">
-          <div className="grid grid-cols-7 gap-px bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden">
+          <div
+            className="grid grid-cols-7 gap-px rounded-xl overflow-hidden"
+            style={{ background: "var(--border-default)" }}
+          >
             {dayLabels.map((d) => (
               <div
                 key={d}
-                className="bg-gray-50 dark:bg-gray-750 p-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400"
+                className="p-2 text-center text-xs font-semibold"
+                style={{ background: "var(--bg-tertiary)", color: "var(--text-muted)" }}
               >
                 {d}
               </div>
@@ -168,18 +186,25 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
                   key={i}
                   onClick={() => setSelectedDate(date)}
                   className={cn(
-                    "bg-white dark:bg-gray-800 p-1.5 min-h-[80px] text-left hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors relative",
+                    "p-1.5 min-h-[80px] text-left transition-colors relative",
                     !isCurrentMonth && "opacity-40",
-                    selected && "ring-2 ring-blue-500 ring-inset"
+                    selected && "ring-2 ring-inset"
                   )}
+                  style={{
+                    background: "var(--bg-card)",
+                    ...(selected ? { "--tw-ring-color": "var(--color-primary)" } as React.CSSProperties : {}),
+                  }}
                 >
                   <span
                     className={cn(
                       "text-xs font-medium inline-flex items-center justify-center h-6 w-6 rounded-full",
-                      today
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-700 dark:text-gray-300"
+                      today ? "text-white" : ""
                     )}
+                    style={
+                      today
+                        ? { background: "var(--color-primary)" }
+                        : { color: "var(--text-secondary)" }
+                    }
                   >
                     {date.getDate()}
                   </span>
@@ -195,17 +220,19 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
                           href={`/dashboard/reminders/${r._id}`}
                           className={cn(
                             "block text-[10px] leading-tight px-1 py-0.5 rounded truncate",
-                            r.completed
-                              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 line-through"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                            r.completed && "line-through"
                           )}
+                          style={{
+                            background: r.completed ? "var(--color-primary-soft)" : "var(--bg-tertiary)",
+                            color: r.completed ? "var(--color-primary)" : "var(--text-secondary)",
+                          }}
                         >
                           {r.title}
                         </Link>
                       </div>
                     ))}
                     {dayReminders.length > 3 && (
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500 px-1">
+                      <span className="text-[10px] px-1" style={{ color: "var(--text-muted)" }}>
                         +{dayReminders.length - 3} more
                       </span>
                     )}
@@ -226,7 +253,10 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
               const today = isToday(date);
               return (
                 <div key={date.toISOString()} className="space-y-2">
-                  <div className={cn("text-center p-2 rounded-lg", today && "bg-blue-600 text-white")}>
+                  <div
+                    className={cn("text-center p-2 rounded-lg", today && "text-white")}
+                    style={today ? { background: "var(--color-primary)" } : { color: "var(--text-primary)" }}
+                  >
                     <p className="text-xs font-medium">{dayLabels[date.getDay()]}</p>
                     <p className="text-lg font-bold">{date.getDate()}</p>
                   </div>
@@ -235,15 +265,18 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
                       <Link
                         key={r._id}
                         href={`/dashboard/reminders/${r._id}`}
-                        className="block p-2 rounded-lg bg-gray-50 dark:bg-gray-750 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="block p-2 rounded-lg transition-colors"
+                        style={{ background: "var(--bg-tertiary)" }}
                       >
                         <div className="flex items-center gap-1.5">
                           <div className={cn("h-2 w-2 rounded-full flex-shrink-0", priorityDotColors[r.priority])} />
-                          <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                          <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>
                             {r.title}
                           </p>
                         </div>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{formatTime(r.dueDate)}</p>
+                        <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                          {formatTime(r.dueDate)}
+                        </p>
                       </Link>
                     ))}
                   </div>
@@ -262,8 +295,11 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
             if (dayReminders.length === 0) {
               return (
                 <div className="text-center py-12">
-                  <CalendarIcon className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No reminders for this day</p>
+                  <CalendarIcon
+                    className="h-12 w-12 mx-auto mb-3"
+                    style={{ color: "var(--text-muted)" }}
+                  />
+                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>No reminders for this day</p>
                 </div>
               );
             }
@@ -275,21 +311,27 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
                     <Link
                       key={r._id}
                       href={`/dashboard/reminders/${r._id}`}
-                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+                      className="flex items-center gap-4 p-3 rounded-xl transition-colors"
+                      style={{ background: "var(--bg-tertiary)" }}
                     >
                       <div className="text-center flex-shrink-0 w-16">
-                        <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                        <p className="text-sm font-bold" style={{ color: "var(--color-primary)" }}>
                           {formatTime(r.dueDate)}
                         </p>
                       </div>
                       <div className={cn("h-10 w-1 rounded-full", getCategoryDotColor(r.category))} />
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-medium", r.completed ? "line-through text-gray-400" : "text-gray-900 dark:text-gray-100")}>
+                        <p
+                          className={cn("text-sm font-medium", r.completed && "line-through")}
+                          style={{ color: r.completed ? "var(--text-muted)" : "var(--text-primary)" }}
+                        >
                           {r.title}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{r.subject}</p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{r.subject}</p>
                       </div>
-                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getPriorityBg(r.priority))}>
+                      <span
+                        className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getPriorityBg(r.priority))}
+                      >
                         {r.priority}
                       </span>
                     </Link>
@@ -303,18 +345,27 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
       {/* Hover Popup */}
       {hoveredReminder && (
         <div
-          className="fixed z-50 bg-gray-900 dark:bg-gray-700 text-white rounded-xl shadow-xl p-3 text-sm max-w-xs pointer-events-none"
-          style={{ left: popupPos.x + 10, top: popupPos.y - 10 }}
+          className="fixed z-50 rounded-xl shadow-xl p-3 text-sm max-w-xs pointer-events-none"
+          style={{
+            left: popupPos.x + 10,
+            top: popupPos.y - 10,
+            background: "var(--bg-tooltip)",
+            color: "var(--text-tooltip)",
+          }}
         >
           <p className="font-medium">{hoveredReminder.title}</p>
           {hoveredReminder.subject && (
-            <p className="text-xs text-gray-300 mt-1">{hoveredReminder.subject}</p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-tooltip-secondary)" }}>
+              {hoveredReminder.subject}
+            </p>
           )}
           <div className="flex items-center gap-2 mt-2">
             <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getPriorityBg(hoveredReminder.priority))}>
               {hoveredReminder.priority}
             </span>
-            <span className="text-xs text-gray-400">{formatTime(hoveredReminder.dueDate)}</span>
+            <span className="text-xs" style={{ color: "var(--text-tooltip-secondary)" }}>
+              {formatTime(hoveredReminder.dueDate)}
+            </span>
           </div>
         </div>
       )}

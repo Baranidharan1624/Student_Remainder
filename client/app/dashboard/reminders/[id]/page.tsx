@@ -106,30 +106,40 @@ function EditReminderContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: "var(--bg-secondary)" }}>
       <Navbar />
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link
           href="/dashboard/reminders"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-sm mb-6 transition-colors hover:opacity-80"
+          style={{ color: "var(--text-secondary)" }}
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Reminders
         </Link>
 
         {loading ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <div
+            className="rounded-2xl border p-8"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+          >
             <div className="flex items-center justify-center py-12">
               <Loader size="md" text="Loading reminder..." />
             </div>
           </div>
         ) : error ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div
+            className="rounded-2xl border"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+          >
             <ErrorState message={error} onRetry={() => router.refresh()} />
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          <div
+            className="rounded-2xl border p-6 sm:p-8 animate-fade-in"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+          >
+            <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--text-primary)" }}>
               Edit Reminder
             </h1>
 
@@ -149,14 +159,19 @@ function EditReminderContent() {
               />
 
               <div className="w-full">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
                   Description
                 </label>
                 <textarea
                   {...register("description")}
                   rows={3}
                   placeholder="Add a description (optional)"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none resize-none"
+                  className="w-full rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 resize-none"
+                  style={{
+                    borderColor: "var(--border-default)",
+                    background: "var(--bg-tertiary)",
+                    color: "var(--text-primary)",
+                  }}
                 />
               </div>
 
@@ -184,7 +199,6 @@ function EditReminderContent() {
                 {...register("dueDate")}
               />
 
-              {/* Completed Toggle */}
               <div className="flex items-center gap-3">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -192,9 +206,15 @@ function EditReminderContent() {
                     className="sr-only peer"
                     {...register("completed")}
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+                  <div
+                    className="w-11 h-6 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
+                    style={{
+                      background: "var(--bg-tertiary)",
+                      borderColor: "var(--border-default)",
+                    }}
+                  />
                 </label>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
                   Mark as Completed
                 </span>
               </div>

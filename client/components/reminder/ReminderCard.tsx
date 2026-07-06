@@ -77,14 +77,21 @@ export default function ReminderCard({
 
   if (viewMode === "list") {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div
+        className="rounded-2xl border p-4 transition-all duration-200 flex flex-col sm:flex-row sm:items-center gap-4 card-hover"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "var(--border-default)",
+        }}
+      >
         {/* Status Indicator */}
         <div className="flex-shrink-0">
           {reminder.completed ? (
-            <CheckCircle2 className="h-6 w-6 text-green-500" />
+            <CheckCircle2 className="h-6 w-6" style={{ color: "var(--color-success)" }} />
           ) : (
             <Clock
-              className={`h-6 w-6 ${overdue ? "text-red-500" : "text-amber-500"}`}
+              className="h-6 w-6"
+              style={{ color: overdue ? "var(--color-danger)" : "var(--color-warning)" }}
             />
           )}
         </div>
@@ -93,7 +100,8 @@ export default function ReminderCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3
-              className={`font-semibold text-gray-900 truncate ${reminder.completed ? "line-through text-gray-400" : ""}`}
+              className={`font-semibold truncate ${reminder.completed ? "line-through" : ""}`}
+              style={{ color: reminder.completed ? "var(--text-tertiary)" : "var(--text-primary)" }}
             >
               {reminder.title}
             </h3>
@@ -104,11 +112,11 @@ export default function ReminderCard({
             </span>
           </div>
           {reminder.subject && (
-            <p className="text-sm text-gray-500 truncate mb-1">
+            <p className="text-sm truncate mb-1" style={{ color: "var(--text-secondary)" }}>
               {reminder.subject}
             </p>
           )}
-          <div className="flex items-center gap-3 text-xs text-gray-400">
+          <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full ${categoryColors[reminder.category] || "bg-gray-100 text-gray-700"}`}
             >
@@ -120,7 +128,7 @@ export default function ReminderCard({
             </span>
             <span className="text-gray-300">|</span>
             <span className="flex items-center gap-1">
-              {reminder.completed ? "✓ Completed" : "○ Pending"}
+              {reminder.completed ? "Completed" : "Pending"}
             </span>
             <span className="text-gray-300">|</span>
             <span>Created {formatCreatedDate(reminder.createdAt)}</span>
@@ -131,13 +139,15 @@ export default function ReminderCard({
         <div className="flex items-center gap-2 flex-shrink-0">
           <Link
             href={`/dashboard/reminders/${reminder._id}`}
-            className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            className="p-2 rounded-xl transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-tertiary)" }}
           >
             <Pencil className="h-4 w-4" />
           </Link>
           <button
             onClick={() => onDelete(reminder._id)}
-            className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="p-2 rounded-xl transition-colors hover:bg-[var(--color-danger-light)]"
+            style={{ color: "var(--text-tertiary)" }}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -148,15 +158,22 @@ export default function ReminderCard({
 
   // Grid view (default)
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all duration-200 flex flex-col">
+    <div
+      className="rounded-2xl border p-5 transition-all duration-200 flex flex-col card-hover"
+      style={{
+        background: "var(--bg-card)",
+        borderColor: "var(--border-default)",
+      }}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           {reminder.completed ? (
-            <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+            <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: "var(--color-success)" }} />
           ) : (
             <Clock
-              className={`h-5 w-5 flex-shrink-0 ${overdue ? "text-red-500" : "text-amber-500"}`}
+              className="h-5 w-5 flex-shrink-0"
+              style={{ color: overdue ? "var(--color-danger)" : "var(--color-warning)" }}
             />
           )}
           <span
@@ -176,19 +193,20 @@ export default function ReminderCard({
       {/* Title & Subject */}
       <Link href={`/dashboard/reminders/${reminder._id}`} className="block mb-2">
         <h3
-          className={`font-semibold text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors ${reminder.completed ? "line-through text-gray-400" : ""}`}
+          className={`font-semibold line-clamp-2 transition-colors ${reminder.completed ? "line-through" : ""}`}
+          style={{ color: reminder.completed ? "var(--text-tertiary)" : "var(--text-primary)" }}
         >
           {reminder.title}
         </h3>
       </Link>
       {reminder.subject && (
-        <p className="text-sm text-gray-500 mb-2 flex items-center gap-1">
+        <p className="text-sm mb-2 flex items-center gap-1" style={{ color: "var(--text-secondary)" }}>
           <Tag className="h-3 w-3" />
           {reminder.subject}
         </p>
       )}
       {reminder.description && (
-        <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+        <p className="text-sm mb-3 line-clamp-2" style={{ color: "var(--text-tertiary)" }}>
           {reminder.description}
         </p>
       )}
@@ -197,10 +215,13 @@ export default function ReminderCard({
       <div className="flex-1" />
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="flex items-center justify-between pt-3 border-t mt-auto" style={{ borderColor: "var(--border-light)" }}>
+        <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-tertiary)" }}>
           <span
-            className={`font-medium ${overdue ? "text-red-500" : dueToday ? "text-blue-600" : ""}`}
+            className="font-medium"
+            style={{
+              color: overdue ? "var(--color-danger)" : dueToday ? "var(--color-primary)" : "var(--text-tertiary)",
+            }}
           >
             {overdue
               ? "Overdue"
@@ -209,20 +230,22 @@ export default function ReminderCard({
                 : formatDate(reminder.dueDate)}
           </span>
           <span className="text-gray-300">|</span>
-          <span>{reminder.completed ? "✓ Completed" : "○ Pending"}</span>
+          <span>{reminder.completed ? "Completed" : "Pending"}</span>
           <span className="text-gray-300">|</span>
           <span>Created {formatCreatedDate(reminder.createdAt)}</span>
         </div>
         <div className="flex items-center gap-1">
           <Link
             href={`/dashboard/reminders/${reminder._id}`}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            className="p-1.5 rounded-xl transition-colors hover:bg-[var(--surface-hover)]"
+            style={{ color: "var(--text-tertiary)" }}
           >
             <Pencil className="h-4 w-4" />
           </Link>
           <button
             onClick={() => onDelete(reminder._id)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="p-1.5 rounded-xl transition-colors hover:bg-[var(--color-danger-light)]"
+            style={{ color: "var(--text-tertiary)" }}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -236,26 +259,38 @@ export default function ReminderCard({
 export function ReminderCardSkeleton({ viewMode = "grid" }: { viewMode?: "grid" | "list" }) {
   if (viewMode === "list") {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 animate-pulse flex items-center gap-4">
-        <div className="h-6 w-6 rounded-full bg-gray-200" />
+      <div
+        className="rounded-2xl border p-4 animate-pulse flex items-center gap-4"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "var(--border-default)",
+        }}
+      >
+        <div className="h-6 w-6 rounded-full skeleton" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-48 bg-gray-200 rounded" />
-          <div className="h-3 w-32 bg-gray-200 rounded" />
+          <div className="h-4 w-48 rounded skeleton" />
+          <div className="h-3 w-32 rounded skeleton" />
         </div>
-        <div className="h-6 w-16 bg-gray-200 rounded-full" />
+        <div className="h-6 w-16 rounded-full skeleton" />
       </div>
     );
   }
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-pulse">
+    <div
+      className="rounded-2xl border p-5 animate-pulse"
+      style={{
+        background: "var(--bg-card)",
+        borderColor: "var(--border-default)",
+      }}
+    >
       <div className="flex items-center justify-between mb-3">
-        <div className="h-5 w-5 bg-gray-200 rounded-full" />
-        <div className="h-6 w-16 bg-gray-200 rounded-full" />
+        <div className="h-5 w-5 rounded-full skeleton" />
+        <div className="h-6 w-16 rounded-full skeleton" />
       </div>
-      <div className="h-5 w-3/4 bg-gray-200 rounded mb-2" />
-      <div className="h-3 w-1/2 bg-gray-200 rounded mb-3" />
-      <div className="h-3 w-full bg-gray-200 rounded mb-2" />
-      <div className="h-3 w-2/3 bg-gray-200 rounded" />
+      <div className="h-5 w-3/4 rounded mb-2 skeleton" />
+      <div className="h-3 w-1/2 rounded mb-3 skeleton" />
+      <div className="h-3 w-full rounded mb-2 skeleton" />
+      <div className="h-3 w-2/3 rounded skeleton" />
     </div>
   );
 }

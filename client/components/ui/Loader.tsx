@@ -14,8 +14,8 @@ export default function Loader({ size = "md", text }: LoaderProps) {
 
   return (
     <div className="flex flex-col items-center justify-center gap-3">
-      <Loader2 className={`${sizes[size]} animate-spin text-blue-600`} />
-      {text && <p className="text-sm text-gray-500">{text}</p>}
+      <Loader2 className={`${sizes[size]} animate-spin`} style={{ color: "var(--color-primary)" }} />
+      {text && <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{text}</p>}
     </div>
   );
 }

@@ -12,7 +12,7 @@ interface AnalyticsChartsProps {
 
 function PieChart({ data, size = 160 }: { data: { label: string; value: number; color: string }[]; size?: number }) {
   const total = data.reduce((s, d) => s + d.value, 0);
-  if (total === 0) return <div className="h-40 flex items-center justify-center text-gray-400 text-sm">No data</div>;
+  if (total === 0) return <div className="h-40 flex items-center justify-center text-sm" style={{ color: "var(--text-muted)" }}>No data</div>;
 
   let cumulative = 0;
   const radius = size / 2 - 10;
@@ -46,8 +46,8 @@ function PieChart({ data, size = 160 }: { data: { label: string; value: number; 
         {data.filter((d) => d.value > 0).map((d, i) => (
           <div key={i} className="flex items-center gap-2 text-xs">
             <div className="h-3 w-3 rounded-sm flex-shrink-0" style={{ backgroundColor: d.color }} />
-            <span className="text-gray-600 dark:text-gray-400">{d.label}</span>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{d.value}</span>
+            <span style={{ color: "var(--text-secondary)" }}>{d.label}</span>
+            <span className="font-medium" style={{ color: "var(--text-primary)" }}>{d.value}</span>
           </div>
         ))}
       </div>
@@ -61,7 +61,7 @@ function BarChart({ data, height = 160 }: { data: { label: string; value: number
     <div className="flex items-end gap-2" style={{ height }}>
       {data.map((d, i) => (
         <div key={i} className="flex-1 flex flex-col items-center gap-1">
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{d.value}</span>
+          <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>{d.value}</span>
           <div
             className="w-full rounded-t-lg transition-all duration-500"
             style={{
@@ -70,7 +70,9 @@ function BarChart({ data, height = 160 }: { data: { label: string; value: number
               minHeight: d.value > 0 ? "8px" : "0px",
             }}
           />
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-tight">{d.label}</span>
+          <span className="text-[10px] text-center leading-tight" style={{ color: "var(--text-muted)" }}>
+            {d.label}
+          </span>
         </div>
       ))}
     </div>
@@ -109,7 +111,7 @@ function LineChart({ data, height = 160, color = "#3b82f6" }: { data: { label: s
       </svg>
       <div className="flex justify-between mt-1">
         {data.map((d, i) => (
-          <span key={i} className="text-[9px] text-gray-400 dark:text-gray-500">{d.label}</span>
+          <span key={i} className="text-[9px]" style={{ color: "var(--text-muted)" }}>{d.label}</span>
         ))}
       </div>
     </div>
@@ -189,9 +191,13 @@ export default function AnalyticsCharts({ reminders, stats, loading }: Analytics
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 animate-pulse">
-            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
-            <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div
+            key={i}
+            className="rounded-2xl p-6 border animate-pulse"
+            style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+          >
+            <div className="h-4 w-32 rounded mb-4" style={{ background: "var(--bg-tertiary)" }} />
+            <div className="h-40 rounded" style={{ background: "var(--bg-tertiary)" }} />
           </div>
         ))}
       </div>
@@ -201,16 +207,28 @@ export default function AnalyticsCharts({ reminders, stats, loading }: Analytics
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 flex justify-center">
+        <div
+          className="rounded-2xl p-4 border flex justify-center"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
           <ProgressRing value={analytics.completed} max={analytics.total || 1} label="Completed" color="#22c55e" />
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 flex justify-center">
+        <div
+          className="rounded-2xl p-4 border flex justify-center"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
           <ProgressRing value={analytics.pending} max={analytics.total || 1} label="Pending" color="#f59e0b" />
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 flex justify-center">
+        <div
+          className="rounded-2xl p-4 border flex justify-center"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
           <ProgressRing value={analytics.completedToday} max={7} label="This Week" color="#3b82f6" />
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 flex justify-center">
+        <div
+          className="rounded-2xl p-4 border flex justify-center"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
           <ProgressRing
             value={analytics.total > 0 ? Math.round((analytics.completed / analytics.total) * 30) : 0}
             max={30}
@@ -221,33 +239,51 @@ export default function AnalyticsCharts({ reminders, stats, loading }: Analytics
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Completion Distribution</h3>
+        <div
+          className="rounded-2xl p-6 border"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Completion Distribution</h3>
           <PieChart data={analytics.completionData} />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Priority Distribution</h3>
+        <div
+          className="rounded-2xl p-6 border"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Priority Distribution</h3>
           <BarChart data={analytics.priorityData} />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Category Distribution</h3>
+        <div
+          className="rounded-2xl p-6 border"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Category Distribution</h3>
           <PieChart data={analytics.categoryData} />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Categories</h3>
+        <div
+          className="rounded-2xl p-6 border"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Categories</h3>
           <BarChart data={analytics.categoryData} />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Weekly Productivity</h3>
+        <div
+          className="rounded-2xl p-6 border"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Weekly Productivity</h3>
           <LineChart data={analytics.weeklyData} color="#3b82f6" />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Monthly Productivity</h3>
+        <div
+          className="rounded-2xl p-6 border"
+          style={{ background: "var(--bg-card)", borderColor: "var(--border-default)" }}
+        >
+          <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Monthly Productivity</h3>
           <LineChart data={analytics.monthlyData} color="#8b5cf6" />
         </div>
       </div>

@@ -52,24 +52,28 @@ export default function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 modal-backdrop"
         onClick={onCancel}
       />
-
-      {/* Dialog */}
       <div
         ref={dialogRef}
-        className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200"
+        className="relative rounded-2xl shadow-xl max-w-md w-full p-6 animate-scale-in border"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "var(--border-default)",
+        }}
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
+          <div
+            className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "var(--color-danger-light)" }}
+          >
+            <AlertTriangle className="h-5 w-5" style={{ color: "var(--color-danger)" }} />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>{title}</h3>
         </div>
-        <p className="text-sm text-gray-500 mb-6">{message}</p>
+        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>{message}</p>
         <div className="flex items-center justify-end gap-3">
           <Button variant="ghost" onClick={onCancel} disabled={loading}>
             {cancelLabel}

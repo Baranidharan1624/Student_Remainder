@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
   LayoutDashboard,
@@ -29,6 +30,25 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const themeRef = useRef<HTMLDivElement>(null);
+
+  // Close theme dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (themeRef.current && !themeRef.current.contains(e.target as Node)) {
+        setThemeOpen(false);
+      }
+    }
+    if (themeOpen) {
+      document.addEventListener("mousedown", handleClick);
+      return () => document.removeEventListener("mousedown", handleClick);
+    }
+  }, [themeOpen]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   if (!isAuthenticated) return null;
 
@@ -38,7 +58,6 @@ export default function Navbar() {
     { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
     { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/dashboard/timeline", label: "Timeline", icon: Clock },
-    { href: "/profile", label: "Profile", icon: User },
   ];
 
   const isActive = (href: string) =>
@@ -53,35 +72,40 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-100 dark:border-gray-700 sticky top-0 z-50 transition-colors">
+    <nav
+      className="glass sticky top-0 z-50 border-b"
+      style={{ borderColor: "var(--border-default)" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/25">
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="h-9 w-9 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg shadow-blue-500/25 transition-transform group-hover:scale-105">
               <Bell className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900 dark:text-gray-100 hidden sm:inline">
+            <span
+              className="text-lg font-bold hidden sm:inline tracking-tight"
+              style={{ color: "var(--text-primary)" }}
+            >
               Student Reminder
             </span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1 p-1 rounded-2xl" style={{ background: "var(--bg-tertiary)" }}>
             {navLinks.map((link) => {
               const Icon = link.icon;
+              const active = isActive(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`
-                    flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200
-                    ${
-                      isActive(link.href)
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
-                    }
-                  `}
+                  className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+                  style={{
+                    color: active ? "var(--color-primary)" : "var(--text-secondary)",
+                    background: active ? "var(--bg-card)" : "transparent",
+                    boxShadow: active ? "var(--shadow-sm)" : "none",
+                  }}
                 >
                   <Icon className="h-4 w-4" />
                   {link.label}
@@ -94,17 +118,19 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             <Link
               href="/dashboard/reminders/new"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/25 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] shadow-lg shadow-blue-500/25 transition-all duration-200 btn-active"
             >
               <Plus className="h-4 w-4" />
-              New
+              New Reminder
             </Link>
 
             {/* Theme Toggle */}
-            <div className="relative">
+            <div className="relative" ref={themeRef}>
               <button
                 onClick={() => setThemeOpen(!themeOpen)}
-                className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2.5 rounded-xl transition-colors hover:bg-[var(--surface-hover)]"
+                style={{ color: "var(--text-secondary)" }}
+                aria-label="Toggle theme"
               >
                 {resolvedTheme === "dark" ? (
                   <Moon className="h-5 w-5" />
@@ -112,41 +138,72 @@ export default function Navbar() {
                   <Sun className="h-5 w-5" />
                 )}
               </button>
-              {themeOpen && (
-                <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 py-1">
-                  {themeOptions.map((opt) => {
-                    const Icon = opt.icon;
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() => {
-                          setTheme(opt.value);
-                          setThemeOpen(false);
-                        }}
-                        className={`flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors ${
-                          theme === opt.value
-                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              <AnimatePresence>
+                {themeOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-40 rounded-2xl shadow-xl border py-1 z-50"
+                    style={{
+                      background: "var(--bg-card)",
+                      borderColor: "var(--border-default)",
+                    }}
+                  >
+                    {themeOptions.map((opt) => {
+                      const Icon = opt.icon;
+                      const isActiveTheme = theme === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          onClick={() => {
+                            setTheme(opt.value);
+                            setThemeOpen(false);
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-sm transition-colors"
+                          style={{
+                            color: isActiveTheme ? "var(--color-primary)" : "var(--text-secondary)",
+                            background: isActiveTheme ? "var(--color-primary-light)" : "transparent",
+                          }}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Notification Bell */}
             <NotificationBell />
 
-            <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">{user?.name}</span>
+            {/* Profile */}
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-colors hover:bg-[var(--surface-hover)]"
+            >
+              <div
+                className="h-8 w-8 rounded-xl flex items-center justify-center text-white text-sm font-semibold"
+                style={{ background: "var(--color-primary)" }}
+              >
+                {user?.name?.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-sm font-medium hidden xl:inline" style={{ color: "var(--text-secondary)" }}>
+                {user?.name}
+              </span>
+            </Link>
+
+            {/* Logout */}
             <button
               onClick={logout}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
+              className="p-2.5 rounded-xl transition-colors hover:bg-[var(--color-danger-light)]"
+              style={{ color: "var(--text-tertiary)" }}
+              aria-label="Logout"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4.5 w-4.5" />
             </button>
           </div>
 
@@ -155,7 +212,9 @@ export default function Navbar() {
             <NotificationBell />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="p-2.5 rounded-xl transition-colors hover:bg-[var(--surface-hover)]"
+              style={{ color: "var(--text-secondary)" }}
+              aria-label="Toggle menu"
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -164,73 +223,100 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors">
-          <div className="px-4 py-3 space-y-1">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`
-                    flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all
-                    ${
-                      isActive(link.href)
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    }
-                  `}
-                >
-                  <Icon className="h-4 w-4" />
-                  {link.label}
-                </Link>
-              );
-            })}
-            <Link
-              href="/dashboard/reminders/new"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-            >
-              <Plus className="h-4 w-4" />
-              New Reminder
-            </Link>
-
-            {/* Theme Toggle Mobile */}
-            <div className="flex items-center gap-2 px-4 py-2.5">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Theme:</span>
-              {themeOptions.map((opt) => {
-                const Icon = opt.icon;
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t overflow-hidden"
+            style={{
+              borderColor: "var(--border-default)",
+              background: "var(--bg-card)",
+            }}
+          >
+            <div className="px-4 py-3 space-y-1">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const active = isActive(link.href);
                 return (
-                  <button
-                    key={opt.value}
-                    onClick={() => setTheme(opt.value)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      theme === opt.value
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                        : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      color: active ? "var(--color-primary)" : "var(--text-secondary)",
+                      background: active ? "var(--color-primary-light)" : "transparent",
+                    }}
                   >
-                    <Icon className="h-4 w-4" />
-                  </button>
+                    <Icon className="h-5 w-5" />
+                    {link.label}
+                  </Link>
                 );
               })}
-            </div>
 
-            <button
-              onClick={() => {
-                logout();
-                setMobileOpen(false);
-              }}
-              className="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
+              <Link
+                href="/dashboard/reminders/new"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
+                style={{ color: "var(--color-primary)" }}
+              >
+                <Plus className="h-5 w-5" />
+                New Reminder
+              </Link>
+
+              {/* Theme Toggle Mobile */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <span className="text-sm" style={{ color: "var(--text-tertiary)" }}>Theme</span>
+                <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
+                  {themeOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    const isActiveTheme = theme === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => setTheme(opt.value)}
+                        className="p-2 rounded-lg transition-all"
+                        style={{
+                          background: isActiveTheme ? "var(--bg-card)" : "transparent",
+                          color: isActiveTheme ? "var(--color-primary)" : "var(--text-tertiary)",
+                          boxShadow: isActiveTheme ? "var(--shadow-sm)" : "none",
+                        }}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <Link
+                href="/profile"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <User className="h-5 w-5" />
+                Profile
+              </Link>
+
+              <button
+                onClick={() => {
+                  logout();
+                  setMobileOpen(false);
+                }}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
+                style={{ color: "var(--color-danger)" }}
+              >
+                <LogOut className="h-5 w-5" />
+                Logout
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
