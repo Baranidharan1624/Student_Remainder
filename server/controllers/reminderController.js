@@ -11,7 +11,7 @@ const VALID_PRIORITIES = ["Low", "Medium", "High"];
 // ==========================================
 exports.createReminder = async (req, res) => {
   try {
-    const { title, description, subject, category, priority, dueDate, dueTime } = req.body;
+    const { title, description, subject, category, priority, dueDate, dueTime, reminderSchedules } = req.body;
 
     // Validate required fields
     if (!title || !dueDate || !dueTime) {
@@ -55,25 +55,46 @@ exports.createReminder = async (req, res) => {
       });
     }
 
-    // Combine date and time in Asia/Kolkata
     const dateStr = parsedDueDate.toISOString().split("T")[0];
-    const reminderDateTimeStr = `${dateStr}T${dueTime}:00`;
-    const reminderTimeKolkata = moment.tz(reminderDateTimeStr, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
+    const targetDueDateTimeStr = `${dateStr}T${dueTime}:00`;
+    const targetDueDateTimeKolkata = moment.tz(targetDueDateTimeStr, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
     
-    if (!reminderTimeKolkata.isValid()) {
+    if (!targetDueDateTimeKolkata.isValid()) {
       return res.status(400).json({
         success: false,
         message: "Invalid date or time combination",
       });
     }
 
-    // Check if it's in the past
     const nowKolkata = moment().tz("Asia/Kolkata");
-    if (reminderTimeKolkata.isBefore(nowKolkata)) {
-      return res.status(400).json({
-        success: false,
-        message: "Reminder cannot be set in the past",
-      });
+
+    let formattedSchedules = [];
+    if (reminderSchedules && Array.isArray(reminderSchedules)) {
+      for (const schedule of reminderSchedules) {
+        if (!schedule.date || !schedule.time) {
+          return res.status(400).json({ success: false, message: "Each schedule must have a date and time" });
+        }
+        if (!timeRegex.test(schedule.time)) {
+          return res.status(400).json({ success: false, message: "Invalid time format in schedules" });
+        }
+        const scheduleTimeKolkata = moment.tz(`${schedule.date}T${schedule.time}:00`, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
+        if (!scheduleTimeKolkata.isValid()) {
+          return res.status(400).json({ success: false, message: "Invalid date or time combination in schedules" });
+        }
+        if (scheduleTimeKolkata.isBefore(nowKolkata)) {
+          return res.status(400).json({ success: false, message: "Reminder schedule cannot be in the past" });
+        }
+        if (scheduleTimeKolkata.isAfter(targetDueDateTimeKolkata) || scheduleTimeKolkata.isSame(targetDueDateTimeKolkata)) {
+          return res.status(400).json({ success: false, message: "Reminder schedule must be before the due date and time" });
+        }
+        formattedSchedules.push({ reminderDate: scheduleTimeKolkata.toDate(), emailSent: false, sentAt: null });
+      }
+      
+      // Ensure no duplicate times
+      const uniqueTimes = new Set(formattedSchedules.map(s => s.reminderDate.getTime()));
+      if (uniqueTimes.size !== formattedSchedules.length) {
+         return res.status(400).json({ success: false, message: "Duplicate reminder schedules are not allowed" });
+      }
     }
 
     const reminder = await Reminder.create({
@@ -85,8 +106,8 @@ exports.createReminder = async (req, res) => {
       priority,
       dueDate: parsedDueDate,
       dueTime,
-      reminderDateTime: reminderTimeKolkata.toDate(),
       timezone: "Asia/Kolkata",
+      reminderSchedules: formattedSchedules,
     });
 
     res.status(201).json({
@@ -160,10 +181,10 @@ exports.getReminders = async (req, res) => {
     }
 
     // TASK 6: Sort support
-    let sortOption = { reminderDateTime: 1 }; // default sort (nearest first)
+    let sortOption = { dueDate: 1 }; // default sort (nearest first)
 
     if (sort) {
-      const validSortFields = ["dueDate", "reminderDateTime", "priority", "createdAt"];
+      const validSortFields = ["dueDate", "priority", "createdAt"];
       const isDescending = sort.startsWith("-");
       const sortField = isDescending ? sort.substring(1) : sort;
 
@@ -290,7 +311,7 @@ exports.updateReminder = async (req, res) => {
       });
     }
 
-    const { title, description, subject, category, priority, dueDate, dueTime, completed } = req.body;
+    const { title, description, subject, category, priority, dueDate, dueTime, completed, reminderSchedules } = req.body;
 
     // Validate category if provided
     if (category && !VALID_CATEGORIES.includes(category)) {
@@ -332,21 +353,44 @@ exports.updateReminder = async (req, res) => {
       reminder.dueDate = parsedDueDate;
     }
 
-    // If either dueDate or dueTime is updated, recalculate reminderDateTime
-    if (dueDate || dueTime) {
-      const currentDueDateStr = reminder.dueDate ? reminder.dueDate.toISOString().split("T")[0] : moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
-      const currentDueTime = reminder.dueTime || "23:59";
+
+    // Handle reminderSchedules if provided
+    if (reminderSchedules !== undefined && Array.isArray(reminderSchedules)) {
+      const sentSchedules = reminder.reminderSchedules ? reminder.reminderSchedules.filter(s => s.emailSent) : [];
+      let updatedSchedules = [...sentSchedules];
+      const nowKolkata = moment().tz("Asia/Kolkata");
       
-      const combinedDateTimeStr = `${currentDueDateStr}T${currentDueTime}:00`;
-      const updatedTimeKolkata = moment.tz(combinedDateTimeStr, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
-      
-      // Optionally validate if it's not in the past here if needed
-      // but if the user just wants to update title, we shouldn't block if the reminder is already in the past.
-      // So we just update the reminderDateTime.
-      
-      if (updatedTimeKolkata.isValid()) {
-        reminder.reminderDateTime = updatedTimeKolkata.toDate();
+      const currentDueDateStr = (dueDate ? new Date(dueDate) : (reminder.dueDate || new Date())).toISOString().split("T")[0];
+      const currentDueTime = dueTime || reminder.dueTime || "23:59";
+      const targetDueDateTime = moment.tz(`${currentDueDateStr}T${currentDueTime}:00`, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
+
+      for (const schedule of reminderSchedules) {
+        if (!schedule.date || !schedule.time) {
+          return res.status(400).json({ success: false, message: "Each schedule must have a date and time" });
+        }
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+        if (!timeRegex.test(schedule.time)) {
+          return res.status(400).json({ success: false, message: "Invalid time format in schedules" });
+        }
+        const scheduleTimeKolkata = moment.tz(`${schedule.date}T${schedule.time}:00`, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
+        if (!scheduleTimeKolkata.isValid()) {
+          return res.status(400).json({ success: false, message: "Invalid date or time combination in schedules" });
+        }
+        if (scheduleTimeKolkata.isBefore(nowKolkata)) {
+          return res.status(400).json({ success: false, message: "Reminder schedule cannot be set in the past" });
+        }
+        if (scheduleTimeKolkata.isAfter(targetDueDateTime) || scheduleTimeKolkata.isSame(targetDueDateTime)) {
+          return res.status(400).json({ success: false, message: "Reminder schedule must be before the due date and time" });
+        }
+        updatedSchedules.push({ reminderDate: scheduleTimeKolkata.toDate(), emailSent: false, sentAt: null });
       }
+
+      const uniqueTimes = new Set(updatedSchedules.map(s => s.reminderDate.getTime()));
+      if (uniqueTimes.size !== updatedSchedules.length) {
+         return res.status(400).json({ success: false, message: "Duplicate reminder schedules are not allowed" });
+      }
+      
+      reminder.reminderSchedules = updatedSchedules;
     }
 
     // Validate completed if provided
@@ -462,9 +506,7 @@ exports.getDashboard = async (req, res) => {
             {
               $match: {
                 completed: false,
-                reminderDateTime: {
-                  // We need to match today's date in Kolkata timezone
-                  // Since aggregate happens on UTC dates in DB, it's safer to build start/end of day in Kolkata, then convert to UTC Date objects
+                dueDate: {
                   $gte: moment().tz("Asia/Kolkata").startOf('day').toDate(),
                   $lte: moment().tz("Asia/Kolkata").endOf('day').toDate(),
                 },
@@ -476,7 +518,7 @@ exports.getDashboard = async (req, res) => {
             {
               $match: {
                 completed: false,
-                reminderDateTime: { $lt: moment().tz("Asia/Kolkata").toDate() },
+                dueDate: { $lt: moment().tz("Asia/Kolkata").startOf('day').toDate() },
               },
             },
             { $count: "count" },

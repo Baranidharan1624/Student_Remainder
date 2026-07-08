@@ -25,6 +25,12 @@ const reminderSchema = z
     priority: z.string().optional(),
     dueDate: z.string().min(1, "Due date is required"),
     dueTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Valid time is required"),
+    reminderSchedules: z.array(
+      z.object({
+        date: z.string().min(1, "Required"),
+        time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Required"),
+      })
+    ).optional(),
   })
   .refine(
     (data) => {
@@ -44,6 +50,7 @@ type ReminderFormData = z.infer<typeof reminderSchema>;
 function CreateReminderContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [reminderCount, setReminderCount] = useState(1);
 
   const {
     register,
@@ -54,6 +61,7 @@ function CreateReminderContent() {
     defaultValues: {
       priority: "Medium",
       category: "Other",
+      reminderSchedules: [{ date: "", time: "" }],
     },
   });
 
@@ -68,19 +76,9 @@ function CreateReminderContent() {
         priority: (data.priority as Priority) || "Medium",
         dueDate: data.dueDate,
         dueTime: data.dueTime,
+        reminderSchedules: data.reminderSchedules?.slice(0, reminderCount) || [],
       });
-      toast.success(
-        <div>
-          Reminder created successfully.<br />
-          Email notifications scheduled:<br />
-          <ul className="list-disc ml-4 mt-1">
-            <li>24 Hours Before</li>
-            <li>5 Hours Before</li>
-            <li>10 Minutes Before</li>
-          </ul>
-        </div>,
-        { duration: 5000 }
-      );
+      toast.success("Reminder created successfully.", { duration: 5000 });
       router.push("/dashboard/reminders");
     } catch (error: unknown) {
       const message =
@@ -181,6 +179,40 @@ function CreateReminderContent() {
                 error={errors.dueTime?.message}
                 {...register("dueTime")}
               />
+            </div>
+
+            <div className="pt-4 border-t" style={{ borderColor: "var(--border-default)" }}>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                Reminder Schedule
+              </h3>
+              
+              <div className="mb-4">
+                <Select
+                  label="Number of Reminder Emails"
+                  options={Array.from({ length: 11 }).map((_, i) => ({ value: String(i), label: String(i) }))}
+                  value={String(reminderCount)}
+                  onChange={(e) => setReminderCount(Number(e.target.value))}
+                />
+              </div>
+
+              {Array.from({ length: reminderCount }).map((_, index) => (
+                <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 rounded-xl border" style={{ borderColor: "var(--border-default)", background: "var(--bg-tertiary)" }}>
+                  <Input
+                    label={`Reminder ${index + 1} Date *`}
+                    type="date"
+                    icon={<Calendar className="h-4 w-4" />}
+                    error={errors.reminderSchedules?.[index]?.date?.message}
+                    {...register(`reminderSchedules.${index}.date` as const)}
+                  />
+                  <Input
+                    label={`Reminder ${index + 1} Time *`}
+                    type="time"
+                    icon={<Clock className="h-4 w-4" />}
+                    error={errors.reminderSchedules?.[index]?.time?.message}
+                    {...register(`reminderSchedules.${index}.time` as const)}
+                  />
+                </div>
+              ))}
             </div>
 
             <div className="flex items-center gap-3 pt-4">

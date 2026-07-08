@@ -11,56 +11,47 @@ const startScheduler = () => {
   cron.schedule("* * * * *", async () => {
     try {
       const now = moment().tz("Asia/Kolkata");
-      
-      // Find incomplete reminders that have a valid reminderDateTime
+
+      // Find incomplete reminders
       const reminders = await Reminder.find({
         completed: false,
-        reminderDateTime: { $ne: null },
       }).populate("user", "name email");
 
       for (const reminder of reminders) {
         if (!reminder.user || !reminder.user.email) continue;
+        if (!reminder.reminderSchedules || reminder.reminderSchedules.length === 0) continue;
 
-        const reminderTime = moment(reminder.reminderDateTime).tz(reminder.timezone || "Asia/Kolkata");
-        const diffMinutes = reminderTime.diff(now, "minutes");
+        let hasUpdates = false;
 
-        // If the reminder is in the past by more than 10 minutes, we don't send anything
-        if (diffMinutes < 0) continue;
+        for (let i = 0; i < reminder.reminderSchedules.length; i++) {
+          const schedule = reminder.reminderSchedules[i];
+          if (schedule.emailSent) continue;
 
-        let emailTypeToSend = null;
+          const scheduleTime = moment(schedule.reminderDate).tz(reminder.timezone || "Asia/Kolkata");
 
-        // 24 Hours condition
-        if (diffMinutes <= 1440 && diffMinutes > 300 && !reminder.email24Sent) {
-          emailTypeToSend = "24h";
-        }
-        // 5 Hours condition
-        else if (diffMinutes <= 300 && diffMinutes > 10 && !reminder.email5Sent) {
-          emailTypeToSend = "5h";
-        }
-        // 10 Minutes condition
-        else if (diffMinutes <= 10 && diffMinutes >= 0 && !reminder.email10Sent) {
-          emailTypeToSend = "10m";
-        }
+          if (scheduleTime.isSameOrBefore(now)) {
+            console.log(`[Scheduler] Triggering email for reminder ${reminder._id} (Schedule ${i + 1}/${reminder.reminderSchedules.length})`);
 
-        if (emailTypeToSend) {
-          console.log(`[Scheduler] Triggering ${emailTypeToSend} email for reminder ${reminder._id}`);
-          
-          const result = await sendReminderEmail({
-            to: reminder.user.email,
-            userName: reminder.user.name,
-            reminder,
-            type: emailTypeToSend,
-          });
+            const result = await sendReminderEmail({
+              to: reminder.user.email,
+              userName: reminder.user.name,
+              reminder,
+              scheduleNumber: i + 1,
+              totalSchedules: reminder.reminderSchedules.length,
+              scheduleDate: schedule.reminderDate
+            });
 
-          if (result.success) {
-            // Update DB immediately
-            if (emailTypeToSend === "24h") reminder.email24Sent = true;
-            if (emailTypeToSend === "5h") reminder.email5Sent = true;
-            if (emailTypeToSend === "10m") reminder.email10Sent = true;
-            
-            reminder.lastEmailSentAt = new Date();
-            await reminder.save();
+            if (result.success) {
+              schedule.emailSent = true;
+              schedule.sentAt = new Date();
+              hasUpdates = true;
+            }
           }
+        }
+
+        if (hasUpdates) {
+          // Because reminderSchedules is an array of subdocuments, saving the parent document will update them
+          await reminder.save();
         }
       }
     } catch (error) {

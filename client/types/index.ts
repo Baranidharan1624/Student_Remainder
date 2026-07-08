@@ -51,14 +51,18 @@ export interface Reminder {
   priority: Priority;
   dueDate: string;
   dueTime: string;
-  reminderDateTime: string;
-  remainingDays: number;
-  remainingHours: number;
-  remainingMinutes: number;
   status: "Upcoming" | "Due Today" | "Completed" | "Overdue";
   completed: boolean;
+  reminderSchedules?: ReminderSchedule[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ReminderSchedule {
+  _id?: string;
+  reminderDate: string;
+  emailSent: boolean;
+  sentAt?: string | null;
 }
 
 export interface CreateReminderPayload {
@@ -69,6 +73,7 @@ export interface CreateReminderPayload {
   priority?: Priority;
   dueDate: string;
   dueTime: string;
+  reminderSchedules?: { date: string; time: string }[];
 }
 
 export type UpdateReminderPayload = Partial<CreateReminderPayload> & {

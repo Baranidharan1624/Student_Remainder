@@ -19,12 +19,16 @@ export function formatTime(timeStr?: string): string {
   return `${hour}:${m} ${ampm}`;
 }
 
-export function getCountdownText(reminderDateTime: string, completed: boolean): string {
+export function getCountdownText(dueDate: string, dueTime: string, completed: boolean): string {
   if (completed) return "Completed";
-  if (!reminderDateTime) return "Upcoming"; // fallback
+  if (!dueDate) return "Upcoming"; // fallback
 
   const now = new Date();
-  const target = new Date(reminderDateTime);
+  
+  // Construct target Date from dueDate and dueTime
+  const dateStr = new Date(dueDate).toISOString().split("T")[0];
+  const target = new Date(`${dateStr}T${dueTime || "23:59"}:00`);
+  
   const diffMs = target.getTime() - now.getTime();
 
   if (diffMs < 0) return "Overdue";

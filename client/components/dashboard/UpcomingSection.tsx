@@ -79,7 +79,7 @@ export default function UpcomingSection({ reminders, loading }: UpcomingSectionP
                     )}
                     <span className="flex items-center gap-1 font-medium" style={{ color: "var(--text-secondary)" }}>
                       <Hourglass className="h-3 w-3" />
-                      {getCountdownText(r.reminderDateTime, r.completed)}
+                      {getCountdownText(r.dueDate, r.dueTime, r.completed)}
                     </span>
                   </div>
                 </div>

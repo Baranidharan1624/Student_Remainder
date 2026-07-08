@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { remindersAPI } from "@/lib/api";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -27,19 +27,25 @@ const reminderSchema = z.object({
   dueDate: z.string().min(1, "Due date is required"),
   dueTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Valid time is required"),
   completed: z.boolean().optional(),
+  reminderSchedules: z.array(
+    z.object({
+      date: z.string().min(1, "Required"),
+      time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Required"),
+    })
+  ).optional(),
 })
-.refine(
-  (data) => {
-    // During edit, we might be editing an old reminder that is already in the past.
-    // It's often better not to strictly validate past dates on edit unless they change it, 
-    // but the simplest approach is to allow it or only warn. We will remove the past date validation on edit.
-    return true;
-  },
-  {
-    message: "Reminder cannot be set in the past",
-    path: ["dueTime"],
-  }
-);
+  .refine(
+    (data) => {
+      // During edit, we might be editing an old reminder that is already in the past.
+      // It's often better not to strictly validate past dates on edit unless they change it, 
+      // but the simplest approach is to allow it or only warn. We will remove the past date validation on edit.
+      return true;
+    },
+    {
+      message: "Reminder cannot be set in the past",
+      path: ["dueTime"],
+    }
+  );
 
 type ReminderFormData = z.infer<typeof reminderSchema>;
 
@@ -50,6 +56,8 @@ function EditReminderContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sentSchedules, setSentSchedules] = useState<any[]>([]);
+  const [reminderCount, setReminderCount] = useState(1);
 
   const {
     register,
@@ -69,6 +77,19 @@ function EditReminderContent() {
         if (!cancelled) {
           if (data.success) {
             const r = data.reminder;
+            const sent = r.reminderSchedules?.filter((s: any) => s.emailSent) || [];
+            const pending = r.reminderSchedules?.filter((s: any) => !s.emailSent) || [];
+
+            const formattedPending = pending.map((s: any) => {
+              const d = new Date(s.reminderDate);
+              const hrs = d.getHours().toString().padStart(2, "0");
+              const mins = d.getMinutes().toString().padStart(2, "0");
+              return {
+                date: d.toISOString().split("T")[0],
+                time: `${hrs}:${mins}`
+              };
+            });
+
             reset({
               title: r.title,
               description: r.description,
@@ -78,7 +99,10 @@ function EditReminderContent() {
               dueDate: new Date(r.dueDate).toISOString().split("T")[0],
               dueTime: r.dueTime || "23:59", // fallback for older reminders
               completed: r.completed,
+              reminderSchedules: formattedPending,
             });
+            setSentSchedules(sent);
+            setReminderCount(sent.length + pending.length || 1);
           } else {
             setError("Reminder not found");
           }
@@ -105,6 +129,7 @@ function EditReminderContent() {
         dueDate: data.dueDate,
         dueTime: data.dueTime,
         completed: data.completed,
+        reminderSchedules: data.reminderSchedules?.slice(0, Math.max(0, reminderCount - sentSchedules.length)) || [],
       });
       toast.success("Reminder updated successfully!");
       router.push("/dashboard/reminders");
@@ -112,7 +137,7 @@ function EditReminderContent() {
       const message =
         err instanceof Error
           ? (err as { response?: { data?: { message?: string } } }).response
-              ?.data?.message || err.message
+            ?.data?.message || err.message
           : "Failed to update reminder";
       toast.error(message);
     } finally {
@@ -221,6 +246,54 @@ function EditReminderContent() {
                   error={errors.dueTime?.message}
                   {...register("dueTime")}
                 />
+              </div>
+
+              <div className="pt-4 border-t" style={{ borderColor: "var(--border-default)" }}>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                  Reminder Schedule
+                </h3>
+
+                <div className="mb-4">
+                  <Select
+                    label="Total Number of Reminder Emails"
+                    options={Array.from({ length: 11 - sentSchedules.length }).map((_, i) => ({ value: String(i + sentSchedules.length), label: String(i + sentSchedules.length) }))}
+                    value={String(reminderCount)}
+                    onChange={(e) => setReminderCount(Number(e.target.value))}
+                  />
+                </div>
+
+                {sentSchedules.length > 0 && (
+                  <div className="mt-4 mb-4">
+                    <h4 className="text-sm font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>Email History (Sent)</h4>
+                    <div className="space-y-2">
+                      {sentSchedules.map((s, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
+                          <CheckCircle className="h-4 w-4" />
+                          <span>Sent on {new Date(s.sentAt || s.reminderDate).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {Array.from({ length: Math.max(0, reminderCount - sentSchedules.length) }).map((_, index) => (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 rounded-xl border" style={{ borderColor: "var(--border-default)", background: "var(--bg-tertiary)" }}>
+                    <Input
+                      label={`Pending Reminder ${index + 1} Date *`}
+                      type="date"
+                      icon={<Calendar className="h-4 w-4" />}
+                      error={errors.reminderSchedules?.[index]?.date?.message}
+                      {...register(`reminderSchedules.${index}.date` as const)}
+                    />
+                    <Input
+                      label={`Pending Reminder ${index + 1} Time *`}
+                      type="time"
+                      icon={<Clock className="h-4 w-4" />}
+                      error={errors.reminderSchedules?.[index]?.time?.message}
+                      {...register(`reminderSchedules.${index}.time` as const)}
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="flex items-center gap-3">

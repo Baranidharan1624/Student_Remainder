@@ -16,38 +16,37 @@ const sendReminderEmail = async ({
   to,
   userName,
   reminder,
-  type, // "24h" | "5h" | "10m"
+  scheduleNumber,
+  totalSchedules,
+  scheduleDate
 }) => {
   try {
     const transporter = createTransporter();
 
-    let subjectPrefix = "";
+    let subjectPrefix = `Reminder: ${reminder.title}`;
+
+    const targetDueDateTimeStr = `${new Date(reminder.dueDate).toISOString().split("T")[0]}T${reminder.dueTime || "23:59"}:00`;
+    const remainingTimeDiff = moment(targetDueDateTimeStr)
+      .tz(reminder.timezone || "Asia/Kolkata")
+      .diff(moment(scheduleDate || new Date()).tz(reminder.timezone || "Asia/Kolkata"));
+
+    const remainingDuration = moment.duration(remainingTimeDiff > 0 ? remainingTimeDiff : 0);
+    const days = Math.floor(remainingDuration.asDays());
+    const hours = remainingDuration.hours();
+    const minutes = remainingDuration.minutes();
+
     let remainingText = "";
+    if (days > 0) remainingText += `${days} Days `;
+    if (hours > 0) remainingText += `${hours} Hours `;
+    if (minutes > 0 || remainingText === "") remainingText += `${minutes} Minutes`;
 
-    switch (type) {
-      case "24h":
-        subjectPrefix = "Reminder: Your task is due in 24 hours";
-        remainingText = "24 Hours";
-        break;
-      case "5h":
-        subjectPrefix = "Reminder: Only 5 hours remaining";
-        remainingText = "5 Hours";
-        break;
-      case "10m":
-        subjectPrefix = "Reminder: Only 10 minutes left";
-        remainingText = "10 Minutes";
-        break;
-      default:
-        subjectPrefix = "Reminder for your task";
-        remainingText = "Upcoming";
-    }
-
-    const dueDateFormatted = moment(reminder.reminderDateTime || reminder.dueDate)
+    const targetDueDateTimeStrForFormat = `${new Date(reminder.dueDate).toISOString().split("T")[0]}T${reminder.dueTime || "23:59"}:00`;
+    const dueDateFormatted = moment(targetDueDateTimeStrForFormat)
       .tz(reminder.timezone || "Asia/Kolkata")
       .format("DD MMMM YYYY");
-      
+
     const dueTimeFormatted = reminder.dueTime
-      ? moment(reminder.reminderDateTime).tz(reminder.timezone || "Asia/Kolkata").format("hh:mm A")
+      ? moment(targetDueDateTimeStrForFormat).tz(reminder.timezone || "Asia/Kolkata").format("hh:mm A")
       : "Not set";
 
     const htmlContent = `
@@ -78,12 +77,24 @@ const sendReminderEmail = async ({
               <td style="padding: 10px; border: 1px solid #e5e7eb;">${reminder.category}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">Date</td>
+              <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">Due Date</td>
               <td style="padding: 10px; border: 1px solid #e5e7eb;">${dueDateFormatted}</td>
             </tr>
             <tr>
-              <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">Time</td>
+              <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">Due Time</td>
               <td style="padding: 10px; border: 1px solid #e5e7eb;">${dueTimeFormatted}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">Current Reminder Number</td>
+              <td style="padding: 10px; border: 1px solid #e5e7eb;">Reminder ${scheduleNumber} of ${totalSchedules}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">Scheduled Reminder Date</td>
+              <td style="padding: 10px; border: 1px solid #e5e7eb;">${moment(scheduleDate).tz(reminder.timezone || "Asia/Kolkata").format("DD MMMM YYYY")}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">Scheduled Reminder Time</td>
+              <td style="padding: 10px; border: 1px solid #e5e7eb;">${moment(scheduleDate).tz(reminder.timezone || "Asia/Kolkata").format("hh:mm A")}</td>
             </tr>
             <tr>
               <td style="padding: 10px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold; color: #DC2626;">Remaining Time</td>

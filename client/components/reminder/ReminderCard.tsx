@@ -62,7 +62,7 @@ export default function ReminderCard({
 }: ReminderCardProps) {
   useCountdown(); // Trigger re-render every minute
 
-  const countdownText = getCountdownText(reminder.reminderDateTime, reminder.completed);
+  const countdownText = getCountdownText(reminder.dueDate, reminder.dueTime, reminder.completed);
   const isOverdue = countdownText === "Overdue";
 
   if (viewMode === "list") {

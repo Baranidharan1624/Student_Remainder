@@ -306,7 +306,7 @@ export default function CalendarView({ reminders }: CalendarViewProps) {
             return (
               <div className="space-y-2">
                 {dayReminders
-                  .sort((a, b) => new Date(a.reminderDateTime).getTime() - new Date(b.reminderDateTime).getTime())
+                  .sort((a, b) => (a.dueTime || "23:59").localeCompare(b.dueTime || "23:59"))
                   .map((r) => (
                     <Link
                       key={r._id}
