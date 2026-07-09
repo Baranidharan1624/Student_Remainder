@@ -7,6 +7,8 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  whatsappNumber?: string;
+  preferredReminderMethod?: "Email" | "WhatsApp" | "Both";
   notificationEnabled?: boolean;
   createdAt?: string;
 }
@@ -57,6 +59,17 @@ export interface Reminder {
   remainingMinutes: number;
   status: "Upcoming" | "Due Today" | "Completed" | "Overdue";
   completed: boolean;
+  notificationMethods?: ("email" | "whatsapp")[];
+  reminderSchedule?: {
+    date: string;
+    time: string;
+    dateTime: string;
+    sent: boolean;
+  }[];
+  deliveryStatus?: {
+    emailStatus: "Pending" | "Sent" | "Failed";
+    whatsappStatus: "Pending" | "Sent" | "Failed";
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -69,6 +82,11 @@ export interface CreateReminderPayload {
   priority?: Priority;
   dueDate: string;
   dueTime: string;
+  notificationMethods?: ("email" | "whatsapp")[];
+  reminderSchedule?: {
+    date: string;
+    time: string;
+  }[];
 }
 
 export type UpdateReminderPayload = Partial<CreateReminderPayload> & {

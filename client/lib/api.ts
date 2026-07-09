@@ -9,7 +9,15 @@ import type {
   User,
 } from "@/types";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname === "localhost" ? "127.0.0.1" : window.location.hostname;
+    return `http://${host}:5000/api`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api";
+};
+
+const API_BASE_URL = getBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -56,6 +64,7 @@ export const authAPI = {
     name: string;
     email: string;
     password: string;
+    whatsappNumber: string;
   }) =>
     api.post("/auth/register", data),
 
@@ -76,6 +85,20 @@ export const authAPI = {
     newPassword: string;
   }) =>
     api.put("/auth/change-password", data),
+
+  // Update Profile
+  updateProfile: (data: {
+    name: string;
+    email?: string;
+    whatsappNumber?: string;
+    preferredReminderMethod?: "Email" | "WhatsApp" | "Both";
+    avatar?: string;
+  }) =>
+    api.put<{ success: boolean; message: string; user: User }>("/auth/profile", data),
+
+  // Delete Account
+  deleteAccount: () =>
+    api.delete<{ success: boolean; message: string }>("/auth/account"),
 };
 
 // ==========================================

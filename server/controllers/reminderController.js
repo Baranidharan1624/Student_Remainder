@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Reminder = require("../models/Reminder");
 const moment = require("moment-timezone");
+const { sendCompletionEmail } = require("../services/email.service");
 
 // Valid enum values from the Reminder model
 const VALID_CATEGORIES = ["Assignment", "Exam", "Class", "Personal", "Meeting", "Other"];
@@ -11,7 +12,7 @@ const VALID_PRIORITIES = ["Low", "Medium", "High"];
 // ==========================================
 exports.createReminder = async (req, res) => {
   try {
-    const { title, description, subject, category, priority, dueDate, dueTime } = req.body;
+    const { title, description, subject, category, priority, dueDate, dueTime, notificationMethods, reminderSchedule } = req.body;
 
     // Validate required fields
     if (!title || !dueDate || !dueTime) {
@@ -56,10 +57,33 @@ exports.createReminder = async (req, res) => {
     }
 
     // Combine date and time in Asia/Kolkata
+    let parsedReminderSchedule = [];
+    if (Array.isArray(reminderSchedule)) {
+      try {
+        parsedReminderSchedule = reminderSchedule.map(s => {
+          const schedTimeKolkata = moment.tz(`${s.date}T${s.time}:00`, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
+          if (!schedTimeKolkata.isValid()) {
+            throw new Error(`Invalid schedule date or time: ${s.date} ${s.time}`);
+          }
+          return {
+            date: s.date,
+            time: s.time,
+            dateTime: schedTimeKolkata.toDate(),
+            sent: false
+          };
+        });
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+        });
+      }
+    }
+
     const dateStr = parsedDueDate.toISOString().split("T")[0];
     const reminderDateTimeStr = `${dateStr}T${dueTime}:00`;
     const reminderTimeKolkata = moment.tz(reminderDateTimeStr, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
-    
+
     if (!reminderTimeKolkata.isValid()) {
       return res.status(400).json({
         success: false,
@@ -87,8 +111,9 @@ exports.createReminder = async (req, res) => {
       dueTime,
       reminderDateTime: reminderTimeKolkata.toDate(),
       timezone: "Asia/Kolkata",
+      notificationMethods: Array.isArray(notificationMethods) ? notificationMethods : undefined,
+      reminderSchedule: parsedReminderSchedule,
     });
-
     res.status(201).json({
       success: true,
       message: "Reminder Created Successfully",
@@ -290,7 +315,7 @@ exports.updateReminder = async (req, res) => {
       });
     }
 
-    const { title, description, subject, category, priority, dueDate, dueTime, completed } = req.body;
+    const { title, description, subject, category, priority, dueDate, dueTime, completed, notificationMethods, reminderSchedule } = req.body;
 
     // Validate category if provided
     if (category && !VALID_CATEGORIES.includes(category)) {
@@ -336,14 +361,14 @@ exports.updateReminder = async (req, res) => {
     if (dueDate || dueTime) {
       const currentDueDateStr = reminder.dueDate ? reminder.dueDate.toISOString().split("T")[0] : moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
       const currentDueTime = reminder.dueTime || "23:59";
-      
+
       const combinedDateTimeStr = `${currentDueDateStr}T${currentDueTime}:00`;
       const updatedTimeKolkata = moment.tz(combinedDateTimeStr, "YYYY-MM-DDTHH:mm:ss", "Asia/Kolkata");
-      
+
       // Optionally validate if it's not in the past here if needed
       // but if the user just wants to update title, we shouldn't block if the reminder is already in the past.
       // So we just update the reminderDateTime.
-      
+
       if (updatedTimeKolkata.isValid()) {
         reminder.reminderDateTime = updatedTimeKolkata.toDate();
       }
@@ -366,8 +391,27 @@ exports.updateReminder = async (req, res) => {
     if (subject !== undefined) reminder.subject = subject;
     if (category !== undefined) reminder.category = category;
     if (priority !== undefined) reminder.priority = priority;
+    if (notificationMethods !== undefined && Array.isArray(notificationMethods)) {
+      reminder.notificationMethods = notificationMethods;
+    }
 
     const updatedReminder = await reminder.save();
+
+    // Send completion email if reminder was just marked as completed
+    if (completed === true && !reminder.completed) {
+      // User just completed this reminder
+      const User = require("../models/User");
+      const user = await User.findById(req.user._id).select("name email");
+      if (user && user.email) {
+        sendCompletionEmail({
+          to: user.email,
+          userName: user.name,
+          reminder: updatedReminder,
+        }).catch((err) => {
+          console.error(`[Reminder] Completion email failed: ${err.message}`);
+        });
+      }
+    }
 
     res.status(200).json({
       success: true,

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{subject}}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0f2f5;">
+    <tr>
+      <td align="center" style="padding: 30px 15px;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; width: 100%;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px 16px 0 0; padding: 30px 40px; text-align: center;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="padding-right: 12px; vertical-align: middle;">
+                    <div style="width: 48px; height: 48px; background-color: rgba(255,255,255,0.2); border-radius: 12px; text-align: center; line-height: 48px; font-size: 24px;">
+                      &#x1F4DD;
+                    </div>
+                  </td>
+                  <td style="vertical-align: middle;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">Student Reminder</h1>
+                    <p style="color: rgba(255,255,255,0.85); margin: 4px 0 0 0; font-size: 13px;">Never miss a deadline again</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Notification Badge -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 40px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 25px 0 10px 0; text-align: center;">
+                    <span style="display: inline-block; background-color: {{badgeColor}}; color: #ffffff; padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">
+                      {{badgeText}}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 10px 40px 20px 40px;">
+              <p style="margin: 0; font-size: 17px; color: #374151; line-height: 1.6;">
+                Hello <strong style="color: #111827;">{{userName}}</strong>,
+              </p>
+              <p style="margin: 10px 0 0 0; font-size: 15px; color: #6b7280; line-height: 1.6;">
+                {{greetingText}}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Reminder Card -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 40px 25px 40px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+                <!-- Reminder Title Bar -->
+                <tr>
+                  <td style="background-color: #f9fafb; padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="vertical-align: top;">
+                          <p style="margin: 0; font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Reminder</p>
+                          <h2 style="margin: 4px 0 0 0; font-size: 18px; color: #111827; font-weight: 700;">{{title}}</h2>
+                        </td>
+                        <td style="vertical-align: top; text-align: right;">
+                          <span style="display: inline-block; background-color: {{priorityColor}}; color: #ffffff; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                            {{priority}}
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Details Grid -->
+                <tr>
+                  <td style="padding: 20px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <!-- Row 1: Subject & Category -->
+                      <tr>
+                        <td width="50%" style="padding: 0 10px 16px 0; vertical-align: top;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                              <td style="padding: 12px 14px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #f3f4f6;">
+                                <p style="margin: 0; font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Subject</p>
+                                <p style="margin: 4px 0 0 0; font-size: 14px; color: #374151; font-weight: 600;">{{subject}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td width="50%" style="padding: 0 0 16px 10px; vertical-align: top;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                              <td style="padding: 12px 14px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #f3f4f6;">
+                                <p style="margin: 0; font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Category</p>
+                                <p style="margin: 4px 0 0 0; font-size: 14px; color: #374151; font-weight: 600;">{{category}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <!-- Row 2: Date & Time -->
+                      <tr>
+                        <td width="50%" style="padding: 0 10px 16px 0; vertical-align: top;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                              <td style="padding: 12px 14px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #f3f4f6;">
+                                <p style="margin: 0; font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Date</p>
+                                <p style="margin: 4px 0 0 0; font-size: 14px; color: #374151; font-weight: 600;">{{date}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td width="50%" style="padding: 0 0 16px 10px; vertical-align: top;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                              <td style="padding: 12px 14px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #f3f4f6;">
+                                <p style="margin: 0; font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Time</p>
+                                <p style="margin: 4px 0 0 0; font-size: 14px; color: #374151; font-weight: 600;">{{time}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <!-- Row 3: Remaining Time (Full Width) -->
+                      <tr>
+                        <td colspan="2" style="padding: 0;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                              <td style="padding: 14px; background-color: {{remainingBgColor}}; border-radius: 8px; border: 1px solid {{remainingBorderColor}}; text-align: center;">
+                                <p style="margin: 0; font-size: 11px; color: {{remainingTextColor}}; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Remaining Time</p>
+                                <p style="margin: 4px 0 0 0; font-size: 20px; color: {{remainingTextColor}}; font-weight: 700;">{{remainingTime}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Description (if exists) -->
+                {{#if description}}
+                <tr>
+                  <td style="padding: 0 20px 20px 20px;">
+                    <div style="padding: 14px 16px; background-color: #f0f7ff; border-left: 4px solid #667eea; border-radius: 0 8px 8px 0;">
+                      <p style="margin: 0; font-size: 12px; color: #667eea; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Description</p>
+                      <p style="margin: 6px 0 0 0; font-size: 14px; color: #374151; line-height: 1.5;">{{description}}</p>
+                    </div>
+                  </td>
+                </tr>
+                {{/if}}
+
+                <!-- Action Button -->
+                <tr>
+                  <td style="padding: 0 20px 25px 20px; text-align: center;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                      <tr>
+                        <td style="border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                          <a href="{{actionUrl}}" target="_blank" style="display: inline-block; padding: 14px 36px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; letter-spacing: 0.3px;">
+                            {{actionText}} &#8594;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 40px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="border-top: 1px solid #e5e7eb; padding: 20px 0;">
+                    <p style="margin: 0; font-size: 14px; color: #6b7280; text-align: center; line-height: 1.5;">
+                      {{footerText}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Bottom Bar -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 0 40px 25px 40px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="border-top: 1px solid #f3f4f6; padding-top: 16px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                      Student Reminder &copy; 2026 &bull; Smart Scheduling for Students
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

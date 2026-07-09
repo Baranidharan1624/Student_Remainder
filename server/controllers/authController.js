@@ -6,9 +6,9 @@ const jwt = require("jsonwebtoken");
 // Register
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, whatsappNumber } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !whatsappNumber) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -22,14 +22,35 @@ exports.register = async (req, res) => {
       });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const existingUser = await User.findOne({ email: normalizedEmail });
-
-    if (existingUser) {
+    // Basic E.164 format validation for WhatsApp number
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    const cleanWhatsappNumber = whatsappNumber.replace(/\s+/g, "");
+    if (!phoneRegex.test(cleanWhatsappNumber)) {
       return res.status(400).json({
         success: false,
-        message: "User already exists",
+        message: "Invalid WhatsApp number format. Must include country code (e.g., +919876543210).",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await User.findOne({ 
+      $or: [
+        { email: normalizedEmail },
+        { whatsappNumber: cleanWhatsappNumber }
+      ]
+    });
+
+    if (existingUser) {
+      if (existingUser.email === normalizedEmail) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already exists",
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: "WhatsApp number already in use",
       });
     }
 
@@ -39,6 +60,7 @@ exports.register = async (req, res) => {
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
+      whatsappNumber: cleanWhatsappNumber,
     });
 
     res.status(201).json({
@@ -48,6 +70,7 @@ exports.register = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        whatsappNumber: user.whatsappNumber,
       },
     });
 
@@ -108,6 +131,7 @@ exports.login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        whatsappNumber: user.whatsappNumber,
       },
     });
 
@@ -188,6 +212,149 @@ exports.changePassword = async (req, res) => {
   } catch (error) {
     console.error(error);
 
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// Update Profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email, whatsappNumber, preferredReminderMethod, avatar } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check email if changed
+    if (email && email.trim().toLowerCase() !== user.email) {
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid email",
+        });
+      }
+      const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "Email is already in use by another account",
+        });
+      }
+      user.email = email.trim().toLowerCase();
+    }
+
+    if (whatsappNumber && whatsappNumber.replace(/\s+/g, "") !== user.whatsappNumber) {
+      const cleanNumber = whatsappNumber.replace(/\s+/g, "");
+      const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(cleanNumber)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid WhatsApp number format.",
+        });
+      }
+      
+      const existingUser = await User.findOne({ whatsappNumber: cleanNumber });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "WhatsApp number is already in use by another account",
+        });
+      }
+      
+      user.whatsappNumber = cleanNumber;
+    }
+
+    // Validate notification settings
+    const validPreferences = ["Email", "WhatsApp", "Both"];
+    if (preferredReminderMethod) {
+      if (!validPreferences.includes(preferredReminderMethod)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid preferred reminder method",
+        });
+      }
+
+      if (preferredReminderMethod === "WhatsApp" || preferredReminderMethod === "Both") {
+        if (!user.whatsappNumber) {
+          return res.status(400).json({
+            success: false,
+            message: "WhatsApp number is required when WhatsApp notifications are enabled",
+          });
+        }
+      }
+      
+      user.preferredReminderMethod = preferredReminderMethod;
+    }
+
+    if (avatar !== undefined) {
+      user.avatar = avatar;
+    }
+
+    user.name = name.trim();
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        whatsappNumber: user.whatsappNumber,
+        preferredReminderMethod: user.preferredReminderMethod,
+        avatar: user.avatar,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// Delete Account
+exports.deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Delete all reminders belonging to this user
+    const Reminder = require("../models/Reminder");
+    await Reminder.deleteMany({ user: req.user._id });
+
+    // Delete the user
+    await User.findByIdAndDelete(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Server Error",

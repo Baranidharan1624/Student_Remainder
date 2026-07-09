@@ -8,6 +8,13 @@ const reminderSchema = new mongoose.Schema(
       required: true,
     },
 
+    reminderSchedule: [{
+      date: { type: String, required: true },
+      time: { type: String, required: true },
+      dateTime: { type: Date, required: true },
+      sent: { type: Boolean, default: false }
+    }],
+
     title: {
       type: String,
       required: true,
@@ -59,21 +66,38 @@ const reminderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    email24Sent: {
+
+
+
+    missedReminderSent: {
       type: Boolean,
       default: false,
     },
-    email5Sent: {
-      type: Boolean,
-      default: false,
-    },
-    email10Sent: {
-      type: Boolean,
-      default: false,
-    },
+
     lastEmailSentAt: {
       type: Date,
       default: null,
+    },
+
+    notificationMethods: {
+      type: [{
+        type: String,
+        enum: ["email", "whatsapp"],
+      }],
+      default: ["email"],
+    },
+
+    deliveryStatus: {
+      emailStatus: {
+        type: String,
+        enum: ["Pending", "Sent", "Failed"],
+        default: "Pending",
+      },
+      whatsappStatus: {
+        type: String,
+        enum: ["Pending", "Sent", "Failed"],
+        default: "Pending",
+      },
     },
   },
   {
@@ -97,7 +121,7 @@ function getRemainingTime(doc) {
 
 reminderSchema.virtual("status").get(function () {
   if (this.completed) return "Completed";
-  
+
   if (!this.reminderDateTime) {
     // Fallback for old reminders
     const now = moment().tz("Asia/Kolkata");
@@ -112,7 +136,7 @@ reminderSchema.virtual("status").get(function () {
 
   if (reminderTime.isBefore(now)) return "Overdue";
   if (reminderTime.isSame(now, 'day')) return "Due Today";
-  
+
   return "Upcoming";
 });
 

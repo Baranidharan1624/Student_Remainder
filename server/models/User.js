@@ -30,6 +30,17 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    whatsappNumber: {
+      type: String,
+      default: "",
+    },
+
+    preferredReminderMethod: {
+      type: String,
+      enum: ["Email", "WhatsApp", "Both"],
+      default: "Email",
+    },
   },
   {
     timestamps: true,

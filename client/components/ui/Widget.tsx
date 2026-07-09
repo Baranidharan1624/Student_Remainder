@@ -22,7 +22,11 @@ export default function Widget({
 
   return (
     <div
-      className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-default)] shadow-[var(--shadow-sm)] overflow-hidden"
+      className="bg-[var(--bg-card)] rounded-2xl border overflow-hidden"
+      style={{
+        borderColor: "var(--border-default)",
+        boxShadow: "var(--shadow-sm)",
+      }}
     >
       <div
         className="flex items-center justify-between px-5 py-4 cursor-pointer select-none transition-colors hover:bg-[var(--surface-hover)]"
@@ -52,7 +56,7 @@ export default function Widget({
         </div>
       </div>
       {open && (
-        <div className="px-5 pb-5 border-t" style={{ borderColor: "var(--border-light)" }}>
+        <div className="px-5 pb-5" style={{ borderTop: "1px solid var(--border-light)" }}>
           <div className="pt-4">
             {children}
           </div>

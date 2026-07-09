@@ -12,7 +12,6 @@ import {
   LogOut,
   Menu,
   X,
-  Plus,
   Calendar,
   BarChart3,
   Clock,
@@ -32,7 +31,6 @@ export default function Navbar() {
   const [themeOpen, setThemeOpen] = useState(false);
   const themeRef = useRef<HTMLDivElement>(null);
 
-  // Close theme dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (themeRef.current && !themeRef.current.contains(e.target as Node)) {
@@ -45,7 +43,6 @@ export default function Navbar() {
     }
   }, [themeOpen]);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -57,7 +54,6 @@ export default function Navbar() {
     { href: "/dashboard/reminders", label: "Reminders", icon: ClipboardList },
     { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
     { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/dashboard/timeline", label: "Timeline", icon: Clock },
   ];
 
   const isActive = (href: string) =>
@@ -115,15 +111,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-2">
-            <Link
-              href="/dashboard/reminders/new"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] shadow-lg shadow-blue-500/25 transition-all duration-200 btn-active"
-            >
-              <Plus className="h-4 w-4" />
-              New Reminder
-            </Link>
-
+          <div className="hidden md:flex items-center gap-1">
             {/* Theme Toggle */}
             <div className="relative" ref={themeRef}>
               <button
@@ -191,20 +179,7 @@ export default function Navbar() {
               >
                 {user?.name?.charAt(0).toUpperCase()}
               </div>
-              <span className="text-sm font-medium hidden xl:inline" style={{ color: "var(--text-secondary)" }}>
-                {user?.name}
-              </span>
             </Link>
-
-            {/* Logout */}
-            <button
-              onClick={logout}
-              className="p-2.5 rounded-xl transition-colors hover:bg-[var(--color-danger-light)]"
-              style={{ color: "var(--text-tertiary)" }}
-              aria-label="Logout"
-            >
-              <LogOut className="h-4.5 w-4.5" />
-            </button>
           </div>
 
           {/* Mobile Actions */}
@@ -256,16 +231,6 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-
-              <Link
-                href="/dashboard/reminders/new"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
-                style={{ color: "var(--color-primary)" }}
-              >
-                <Plus className="h-5 w-5" />
-                New Reminder
-              </Link>
 
               {/* Theme Toggle Mobile */}
               <div className="flex items-center gap-3 px-4 py-3">
